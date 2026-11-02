@@ -26,7 +26,7 @@ __version__ = ' qt=6 krita=6.0.4 date=2026_03_26 '
 __license__ = ' GPLv3+ LGPLv3+ '
 __author__ = ' Ricardo Jeremias '
 __email__ = ' jeremy6321478@gmail.com '
-__url__ = ' https://github.com/EyeOdin '
+__url__ = ' https://github.com/akierson/Imagine_Board '
 
 
 # Register Krita Docker

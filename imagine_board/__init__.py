@@ -22,7 +22,7 @@ from .imagine_board_docker import *
 
 
 # Information
-__version__ = ' qt=5 krita=5.2.16 date=2026_03_26 '
+__version__ = ' qt=6 krita=6.0.4 date=2026_03_26 '
 __license__ = ' GPLv3+ LGPLv3+ '
 __author__ = ' Ricardo Jeremias '
 __email__ = ' jeremy6321478@gmail.com '
@@ -30,4 +30,4 @@ __url__ = ' https://github.com/EyeOdin '
 
 
 # Register Krita Docker
-Application.addDockWidgetFactory( DockWidgetFactory( "pykrita_imagine_board_docker", DockWidgetFactoryBase.DockRight, ImagineBoard_Docker ) )
+Application.addDockWidgetFactory( DockWidgetFactory( "pykrita_imagine_board_docker", DockWidgetFactoryBase.DockPosition.DockRight, ImagineBoard_Docker ) )

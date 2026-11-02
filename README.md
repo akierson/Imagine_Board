@@ -19,6 +19,7 @@ Imagine Board is a Krita plugin to browse images and creates reference mood boar
 * Support to various File Formats ( Images, Animation, Compressed, Krita, Internet )
 * Read ![wiki](https://github.com/EyeOdin/imagine_board/wiki) for more information
 * How to ![install a plugin](https://github.com/EyeOdin/imagine_board/wiki/Plugin-Instalation)
+* Requires Krita 6 ( PyQt6 ). Krita 5 ( PyQt5 ) is not supported by this version
 
 # Preview
 

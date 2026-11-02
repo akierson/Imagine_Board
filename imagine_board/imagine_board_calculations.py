@@ -23,8 +23,8 @@ import random
 import urllib
 # Krita
 from krita import *
-# PyQt5
-from PyQt5 import QtWidgets, QtCore, QtGui, uic
+# PyQt6
+from PyQt6 import QtWidgets, QtCore, QtGui, uic
 # Plugin Modules
 from .imagine_board_constants import *
 

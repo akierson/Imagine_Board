@@ -36,8 +36,8 @@ import re
 import shutil
 # Krita Module
 from krita import *
-# PyQt5 Modules
-from PyQt5 import QtWidgets, QtCore, QtGui, uic
+# PyQt6 Modules
+from PyQt6 import QtWidgets, QtCore, QtGui, uic
 # Plugin Modules
 from .imagine_board_constants import *
 from .imagine_board_calculations import *
@@ -125,7 +125,7 @@ class ImagineBoard_Docker( DockWidget ):
         # Files
         self.file_found = False
         self.file_extension = file_normal
-        self.file_sort = QDir.Name
+        self.file_sort = QDir.SortFlag.Name
 
         # Preview
         self.preview_state = None # None "FILE" "IMG" "ANIM" "PDF" "COMP" "DIR" "WEB"
@@ -589,7 +589,7 @@ class ImagineBoard_Docker( DockWidget ):
         geo = self.layout.mode.geometry()
         qpoint = geo.bottomLeft()
         position = self.layout.footer.mapToGlobal( qpoint )
-        action = qmenu.exec_( position )
+        action = qmenu.exec( position )
         # Triggers
         if action == action_preview:
             self.Mode_Index( 0, False )
@@ -1084,13 +1084,13 @@ class ImagineBoard_Docker( DockWidget ):
         if self.sys_transparent == True and self.isFloating() == True:
             state_transparent = not boolean
             self.Footer_Scale( boolean )
-            self.setAttribute( Qt.WA_TranslucentBackground, not boolean )
-            self.setAttribute( Qt.WA_NoSystemBackground, not boolean )
+            self.setAttribute( Qt.WidgetAttribute.WA_TranslucentBackground, not boolean )
+            self.setAttribute( Qt.WidgetAttribute.WA_NoSystemBackground, not boolean )
         else:
             state_transparent = False
             self.Footer_Scale( True )
-            self.setAttribute( Qt.WA_TranslucentBackground, False )
-            self.setAttribute( Qt.WA_NoSystemBackground, False )
+            self.setAttribute( Qt.WidgetAttribute.WA_TranslucentBackground, False )
+            self.setAttribute( Qt.WidgetAttribute.WA_NoSystemBackground, False )
         # Variables
         if self.state_transparent != state_transparent:
             self.state_transparent = state_transparent
@@ -1112,8 +1112,8 @@ class ImagineBoard_Docker( DockWidget ):
     def Display_Pixelated( self, boolean ):
         # Variables
         self.sys_pixelart = boolean
-        if boolean == True: pixelart = Qt.FastTransformation
-        else:               pixelart = Qt.SmoothTransformation
+        if boolean == True: pixelart = Qt.TransformationMode.FastTransformation
+        else:               pixelart = Qt.TransformationMode.SmoothTransformation
         # Panels
         self.panel_preview.Set_Scale_Method( pixelart )
         self.panel_grid.Set_Scale_Method( pixelart )
@@ -1190,11 +1190,11 @@ class ImagineBoard_Docker( DockWidget ):
         # Variables
         list_url = list()
         # Settings
-        if filters == "DIR_FILE":   filters = QDir.AllDirs | QDir.Files | QDir.NoSymLinks | QDir.NoDotAndDotDot
-        elif filters == "DIR":      filters = QDir.AllDirs | QDir.NoSymLinks | QDir.NoDotAndDotDot
-        elif filters == "FILE":     filters = QDir.Files | QDir.NoSymLinks | QDir.NoDotAndDotDot
-        if recursive == True:       recursive = QDirIterator.Subdirectories
-        else:                       recursive = QDirIterator.NoIteratorFlags
+        if filters == "DIR_FILE":   filters = QDir.Filter.AllDirs | QDir.Filter.Files | QDir.Filter.NoSymLinks | QDir.Filter.NoDotAndDotDot
+        elif filters == "DIR":      filters = QDir.Filter.AllDirs | QDir.Filter.NoSymLinks | QDir.Filter.NoDotAndDotDot
+        elif filters == "FILE":     filters = QDir.Filter.Files | QDir.Filter.NoSymLinks | QDir.Filter.NoDotAndDotDot
+        if recursive == True:       recursive = QDirIterator.IteratorFlag.Subdirectories
+        else:                       recursive = QDirIterator.IteratorFlag.NoIteratorFlags
         # Directory
         qdir = QDir()
         qdir.setPath( directory )
@@ -1210,13 +1210,13 @@ class ImagineBoard_Docker( DockWidget ):
     # File Dialog
     def Open_Directory( self, string, directory ):
         file_dialog = QFileDialog( QWidget( self ) )
-        file_dialog.setFileMode( QFileDialog.DirectoryOnly )
+        file_dialog.setFileMode( QFileDialog.FileMode.Directory )
         folder_url = file_dialog.getExistingDirectory( self, string, directory )
         folder_url = os.path.normpath( folder_url )
         return folder_url
     def Open_File( self, string, directory, extension ):
         file_dialog = QFileDialog( QWidget( self ) )
-        file_dialog.setFileMode( QFileDialog.DirectoryOnly )
+        file_dialog.setFileMode( QFileDialog.FileMode.Directory )
         file_url = file_dialog.getOpenFileName( self, string, directory, f"File( *.{ extension } )" )[0]
         file_url = os.path.normpath( file_url )
         return file_url
@@ -1244,22 +1244,22 @@ class ImagineBoard_Docker( DockWidget ):
         # Variables
         size = 50
         # Widget Settings
-        widget.setSizePolicy( QSizePolicy.Ignored, QSizePolicy.Expanding )
-        widget.setFocusPolicy( Qt.NoFocus )
+        widget.setSizePolicy( QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Expanding )
+        widget.setFocusPolicy( Qt.FocusPolicy.NoFocus )
         # QFrame
-        widget.setFrameShape( QFrame.NoFrame )
-        widget.setFrameShadow( QFrame.Plain )
+        widget.setFrameShape( QFrame.Shape.NoFrame )
+        widget.setFrameShadow( QFrame.Shadow.Plain )
         widget.setLineWidth( 0 )
         # QAbstractScrollArea
-        widget.setHorizontalScrollBarPolicy( Qt.ScrollBarAlwaysOff )
+        widget.setHorizontalScrollBarPolicy( Qt.ScrollBarPolicy.ScrollBarAlwaysOff )
         # QAbstractItemView
-        widget.setEditTriggers( QAbstractItemView.DoubleClicked | QAbstractItemView.SelectedClicked )
+        widget.setEditTriggers( QAbstractItemView.EditTrigger.DoubleClicked | QAbstractItemView.EditTrigger.SelectedClicked )
         widget.setDropIndicatorShown( True )
         widget.setDragEnabled( True )
-        widget.setDragDropMode( QAbstractItemView.DragDrop )
-        widget.setDefaultDropAction( Qt.MoveAction )
+        widget.setDragDropMode( QAbstractItemView.DragDropMode.DragDrop )
+        widget.setDefaultDropAction( Qt.DropAction.MoveAction )
         widget.setAlternatingRowColors( True )
-        widget.setSelectionMode( QAbstractItemView.ExtendedSelection )
+        widget.setSelectionMode( QAbstractItemView.SelectionMode.ExtendedSelection )
         widget.setIconSize( QSize( size, size ) )
         # QListView
         widget.setSelectionRectVisible( True )
@@ -1390,7 +1390,7 @@ class ImagineBoard_Docker( DockWidget ):
                 geo = self.layout.folder.geometry()
                 qpoint = geo.bottomLeft()
                 position = self.layout.icon_buttons.mapToGlobal( qpoint )
-                action = qmenu.exec_( position )
+                action = qmenu.exec( position )
                 # Triggers
                 url = None
                 if action == qmenu_parent:
@@ -1441,8 +1441,8 @@ class ImagineBoard_Docker( DockWidget ):
         locked = not self.layout.folder.isFlat()
         if locked == True:
             message = "Continue Operation ?"
-            boolean = QMessageBox.question( QWidget(), DOCKER_NAME, message, QMessageBox.Yes, QMessageBox.Abort )
-            if boolean == QMessageBox.Abort:
+            boolean = QMessageBox.question( QWidget(), DOCKER_NAME, message, QMessageBox.StandardButton.Yes, QMessageBox.StandardButton.Abort )
+            if boolean == QMessageBox.StandardButton.Abort:
                 self.cycle_worker.Stop()
         return locked
 
@@ -1679,15 +1679,15 @@ class ImagineBoard_Docker( DockWidget ):
 
     # Sort
     def Sort_File( self, sync_sort ):
-        file_sort = QtCore.QDir.LocaleAware
-        if sync_sort == "Name":         file_sort = QtCore.QDir.Name
-        elif sync_sort == "Time":       file_sort = QtCore.QDir.Time
-        elif sync_sort == "Size":       file_sort = QtCore.QDir.Size
-        elif sync_sort == "Type":       file_sort = QtCore.QDir.Type
-        elif sync_sort == "Unsorted":   file_sort = QtCore.QDir.Unsorted
-        elif sync_sort == "NoSort":     file_sort = QtCore.QDir.NoSort
-        elif sync_sort == "Reversed":   file_sort = QtCore.QDir.Reversed
-        elif sync_sort == "IgnoreCase": file_sort = QtCore.QDir.IgnoreCase
+        file_sort = QtCore.QDir.SortFlag.LocaleAware
+        if sync_sort == "Name":         file_sort = QtCore.QDir.SortFlag.Name
+        elif sync_sort == "Time":       file_sort = QtCore.QDir.SortFlag.Time
+        elif sync_sort == "Size":       file_sort = QtCore.QDir.SortFlag.Size
+        elif sync_sort == "Type":       file_sort = QtCore.QDir.SortFlag.Type
+        elif sync_sort == "Unsorted":   file_sort = QtCore.QDir.SortFlag.Unsorted
+        elif sync_sort == "NoSort":     file_sort = QtCore.QDir.SortFlag.NoSort
+        elif sync_sort == "Reversed":   file_sort = QtCore.QDir.SortFlag.Reversed
+        elif sync_sort == "IgnoreCase": file_sort = QtCore.QDir.SortFlag.IgnoreCase
         return file_sort
     def Sort_List( self, list_url, sync_sort, sort_reverse ):
         if sync_sort in [ "Name", "Time", "Size", "Type", "Dimension" ]:
@@ -2235,7 +2235,7 @@ class ImagineBoard_Docker( DockWidget ):
             bg = self.color_black
             # QPixmap & Draw
             if tipo == "image" and qpixmap != None:
-                draw = qpixmap.scaled( int( bw * self.ref_camera_zoom ), int( bh * self.ref_camera_zoom ), Qt.IgnoreAspectRatio, Qt.FastTransformation )
+                draw = qpixmap.scaled( int( bw * self.ref_camera_zoom ), int( bh * self.ref_camera_zoom ), Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.FastTransformation )
             else:
                 qpixmap = None
                 draw = None
@@ -2382,7 +2382,7 @@ class ImagineBoard_Docker( DockWidget ):
         geo = self.layout.bookmark_open.geometry()
         qpoint = geo.bottomLeft()
         position = self.layout.grid_control.mapToGlobal( qpoint )
-        action = qmenu.exec_( position )
+        action = qmenu.exec( position )
         # Actions
         if action == action_bookmark_save:
             self.Bookmark_Save()
@@ -2472,7 +2472,7 @@ class ImagineBoard_Docker( DockWidget ):
         action_construct = qmenu.addAction( "Construct from Folder" )
         action_remove = qmenu.addAction( "Remove Selected" )
         action_clear = qmenu.addAction( "Clear List" )
-        action = qmenu.exec_( self.dialog.keyenter_widget_key.mapToGlobal( event.pos() ) )
+        action = qmenu.exec( self.dialog.keyenter_widget_key.mapToGlobal( event.pos() ) )
         if action == action_construct:
             self.Keyenter_Key_Construct()
         if action == action_remove:
@@ -2658,14 +2658,14 @@ class ImagineBoard_Docker( DockWidget ):
         Kritarc_Write( DOCKER_NAME, "reorder_mode", self.reorder_mode )
     def Reorder_String( self ):
         texto = self.dialog.reorder_string.text()
-        reorder_string, ok = QInputDialog.getText( self, "Input Name String", "String", QLineEdit.Normal, texto, Qt.Dialog, Qt.ImhNone )
+        reorder_string, ok = QInputDialog.getText( self, "Input Name String", "String", QLineEdit.EchoMode.Normal, texto, Qt.WindowType.Dialog, Qt.InputMethodHint.ImhNone )
         if ok == True:
             self.reorder_string = reorder_string
             self.dialog.reorder_string.setText( reorder_string )
             Kritarc_Write( DOCKER_NAME, "reorder_string", self.reorder_string )
     def Reorder_Number( self ):
         numero = self.dialog.reorder_number.text()
-        reorder_number, ok = QInputDialog.getInt( self, "Input Start Number", "Number", int( numero ), 0, 100000, 1, Qt.Dialog )
+        reorder_number, ok = QInputDialog.getInt( self, "Input Start Number", "Number", int( numero ), 0, 100000, 1, Qt.WindowType.Dialog )
         if ok == True:
             self.reorder_number = reorder_number
             self.dialog.reorder_number.setText( str( reorder_number ).zfill( zf ) )
@@ -2703,7 +2703,7 @@ class ImagineBoard_Docker( DockWidget ):
                 basename = os.path.basename( url )
                 extension = basename.split( "." )[-1]
                 if extension in file_static:
-                    find = self.reorder_widget_url.findItems( basename, Qt.MatchExactly )
+                    find = self.reorder_widget_url.findItems( basename, Qt.MatchFlag.MatchExactly )
                     if len( find ) == 0:
                         qicon = self.WidgetList_Icon_File( url )
                         item = self.WidgetList_Item( url, qicon )
@@ -2745,9 +2745,9 @@ class ImagineBoard_Docker( DockWidget ):
                 if Check_Html( url ):
                     basename = os.path.basename( url )
                     qpixmap = Download_QPixmap( url )
-                    find = self.reorder_widget_url.findItems( basename, Qt.MatchExactly )
+                    find = self.reorder_widget_url.findItems( basename, Qt.MatchFlag.MatchExactly )
                     if qpixmap != None and len( find ) == 0:
-                        qpixmap = qpixmap.scaled( icon_size, icon_size, Qt.IgnoreAspectRatio, Qt.FastTransformation  )
+                        qpixmap = qpixmap.scaled( icon_size, icon_size, Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.FastTransformation  )
                         qicon = QIcon( qpixmap )
                         item = self.WidgetList_Item( url, qicon )
                         self.reorder_widget_url.addItem( item ) # Widget
@@ -2902,19 +2902,19 @@ class ImagineBoard_Docker( DockWidget ):
         self.dialog.tab_drive_layout.addWidget( self.drive_tree_view )
         # Widget Settings
         self.drive_tree_view.setFont( QFont( "Consolas", 10 ) )
-        self.drive_tree_view.setFocusPolicy( Qt.NoFocus )
+        self.drive_tree_view.setFocusPolicy( Qt.FocusPolicy.NoFocus )
         self.drive_tree_view.setAcceptDrops( True )
-        self.drive_tree_view.setFrameShape( QFrame.NoFrame )
-        self.drive_tree_view.setFrameShadow( QFrame.Plain )
+        self.drive_tree_view.setFrameShape( QFrame.Shape.NoFrame )
+        self.drive_tree_view.setFrameShadow( QFrame.Shadow.Plain )
         self.drive_tree_view.setLineWidth( 0 )
-        self.drive_tree_view.setEditTriggers( QAbstractItemView.AllEditTriggers )
+        self.drive_tree_view.setEditTriggers( QAbstractItemView.EditTrigger.AllEditTriggers )
         self.drive_tree_view.setDropIndicatorShown( True )
         self.drive_tree_view.setDragEnabled( True )
         self.drive_tree_view.setDragDropOverwriteMode( True )
-        self.drive_tree_view.setDragDropMode( QAbstractItemView.DragDrop )
+        self.drive_tree_view.setDragDropMode( QAbstractItemView.DragDropMode.DragDrop )
         # self.drive_tree_view.setDefaultDropAction( Qt.MoveAction )
         self.drive_tree_view.setAlternatingRowColors( True )
-        self.drive_tree_view.setSelectionMode( QAbstractItemView.ExtendedSelection )
+        self.drive_tree_view.setSelectionMode( QAbstractItemView.SelectionMode.ExtendedSelection )
         self.drive_tree_view.setSortingEnabled( True )
         self.drive_tree_view.setStyleSheet( "#tree_view::item{ padding: 1px 0; }" )
         # Model View
@@ -2923,9 +2923,9 @@ class ImagineBoard_Docker( DockWidget ):
         self.drive_tree_view.installEventFilter( self )
     def Drive_Model( self ):
         self.drive_model = QFileSystemModel()
-        self.drive_model.setFilter( QDir.Drives | QDir.AllDirs | QDir.NoSymLinks | QDir.NoDotAndDotDot | QDir.Files )
+        self.drive_model.setFilter( QDir.Filter.Drives | QDir.Filter.AllDirs | QDir.Filter.NoSymLinks | QDir.Filter.NoDotAndDotDot | QDir.Filter.Files )
         self.drive_model.setRootPath( self.drive_url )
-        self.drive_model.setOption( QFileSystemModel.DontUseCustomDirectoryIcons )
+        self.drive_model.setOption( QFileSystemModel.Option.DontUseCustomDirectoryIcons )
     def Drive_Tree_View( self ):
         self.drive_tree_view.sortByColumn( 0, Qt.SortOrder.AscendingOrder )
         self.drive_tree_view.setModel( self.drive_model )
@@ -2952,7 +2952,7 @@ class ImagineBoard_Docker( DockWidget ):
         action_new      = qmenu.addAction( "New Folder" )
         qmenu.addSeparator()
         action_trash    = qmenu.addAction( "Trash" )
-        action = qmenu.exec_( self.drive_tree_view.mapToGlobal( event.pos() ) )
+        action = qmenu.exec( self.drive_tree_view.mapToGlobal( event.pos() ) )
         if action == action_move:       self.Drive_Move( directory )
         if action == action_rename:     self.Drive_Rename( path )
         if action == action_new:        self.Drive_New( path )
@@ -2977,15 +2977,15 @@ class ImagineBoard_Docker( DockWidget ):
             qfile = QFile( source_url )
             if check_distinct == True and check_exist == True:
                 # Pixmaps
-                qis = QPixmap( source_url ).scaled( 200, 200, Qt.KeepAspectRatio, Qt.FastTransformation )
-                qid = QPixmap( destination_url ).scaled( 200, 200, Qt.KeepAspectRatio, Qt.FastTransformation )
+                qis = QPixmap( source_url ).scaled( 200, 200, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.FastTransformation )
+                qid = QPixmap( destination_url ).scaled( 200, 200, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.FastTransformation )
                 sw = qis.width()
                 sh = qis.height()
                 dw = qid.width()
                 dh = qid.height()
                 # Container
                 qpixmap = QPixmap( max( sw, dw ), sh + dh )
-                qpixmap.fill( Qt.transparent )
+                qpixmap.fill( Qt.GlobalColor.transparent )
                 painter = QPainter( qpixmap )
                 painter.drawPixmap( 0, 0, qis )
                 painter.drawPixmap( 0, sh, qid )
@@ -2998,14 +2998,14 @@ class ImagineBoard_Docker( DockWidget ):
                 # Message Box
                 qmessage_box = QMessageBox()
                 qmessage_box.setText( message )
-                qmessage_box.setStandardButtons( QMessageBox.SaveAll | QMessageBox.Discard | QMessageBox.Abort );
+                qmessage_box.setStandardButtons( QMessageBox.StandardButton.SaveAll | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Abort );
                 qmessage_box.setIconPixmap( qpixmap )
                 answer = qmessage_box.exec()
                 # Answer
-                if answer == QMessageBox.SaveAll:
+                if answer == QMessageBox.StandardButton.SaveAll:
                     destination_url = self.Drive_Check( destination_url )
                     self.Drive_Transfer( qfile, destination_url )
-                if answer == QMessageBox.Discard:
+                if answer == QMessageBox.StandardButton.Discard:
                     qfile.moveToTrash()
             elif check_distinct == True and check_exist == False:
                 self.Drive_Transfer( qfile, destination_url )
@@ -3042,7 +3042,7 @@ class ImagineBoard_Docker( DockWidget ):
     def Drive_Rename( self, url_old ):
         # Input
         directory, basename, name, extension = self.Path_Components( url_old )
-        new_name, ok = QInputDialog.getText( self, "Rename", name, QLineEdit.Normal, name, Qt.Dialog, Qt.ImhNone )
+        new_name, ok = QInputDialog.getText( self, "Rename", name, QLineEdit.EchoMode.Normal, name, Qt.WindowType.Dialog, Qt.InputMethodHint.ImhNone )
         # Strings
         url_new = os.path.normpath( os.path.join( directory, new_name + extension ) )
         # Rename
@@ -3064,7 +3064,7 @@ class ImagineBoard_Docker( DockWidget ):
         elif check_directory == True:   url_directory = url
         # Input
         directory, basename, name, extension = self.Path_Components( url_directory )
-        new_name, ok = QInputDialog.getText( self, "New Folder", "Name:", QLineEdit.Normal, "New Folder", Qt.Dialog, Qt.ImhNone )
+        new_name, ok = QInputDialog.getText( self, "New Folder", "Name:", QLineEdit.EchoMode.Normal, "New Folder", Qt.WindowType.Dialog, Qt.InputMethodHint.ImhNone )
         # Strings
         url_new = os.path.normpath( os.path.join( url_directory, new_name ) )
         # New Folder
@@ -3198,7 +3198,7 @@ class ImagineBoard_Docker( DockWidget ):
     def eventFilter( self, source, event ):
         # Event
         et = event.type()
-        modifier_all = QtCore.Qt.ShiftModifier | QtCore.Qt.ControlModifier | QtCore.Qt.AltModifier
+        modifier_all = QtCore.Qt.KeyboardModifier.ShiftModifier | QtCore.Qt.KeyboardModifier.ControlModifier | QtCore.Qt.KeyboardModifier.AltModifier
         # Widgets Resize
         widgets = [
             self.layout.preview_view,
@@ -3206,27 +3206,27 @@ class ImagineBoard_Docker( DockWidget ):
             self.layout.reference_view,
             self.layout.footer,
             ]
-        if ( et == QEvent.Resize and source in widgets ):
+        if ( et == QEvent.Type.Resize and source in widgets ):
             self.Size_Update()
         # Mode
-        if ( et == QEvent.MouseButtonPress and source is self.layout.mode ):
+        if ( et == QEvent.Type.MouseButtonPress and source is self.layout.mode ):
             self.Mode_Press( event )
-        if ( et == QEvent.Wheel and source is self.layout.mode ):
+        if ( et == QEvent.Type.Wheel and source is self.layout.mode ):
             self.Mode_Wheel( event )
         # Search
-        if ( et == QEvent.Wheel and source is self.layout.search ):
+        if ( et == QEvent.Type.Wheel and source is self.layout.search ):
             delta_y = event.angleDelta().y()
             angle = 5
             if delta_y >= +angle:   self.Search_Swap( -1 )
             if delta_y <= -angle:   self.Search_Swap( +1 )
         # Settings
-        if ( et == QEvent.MouseButtonPress and event.modifiers() == modifier_all and source is self.layout.settings ):
+        if ( et == QEvent.Type.MouseButtonPress and event.modifiers() == modifier_all and source is self.layout.settings ):
             self.Size_Standard()
         # Keyenter
-        if ( et == QEvent.ContextMenu and source is self.dialog.keyenter_widget_key ):
+        if ( et == QEvent.Type.ContextMenu and source is self.dialog.keyenter_widget_key ):
             self.Keyenter_Key_Menu( event )
         # Drive
-        if ( et == QEvent.ContextMenu and source is self.drive_tree_view ):
+        if ( et == QEvent.Type.ContextMenu and source is self.drive_tree_view ):
             self.Drive_Menu( event )
         return super().eventFilter( source, event )
 
@@ -3258,9 +3258,9 @@ class ImagineBoard_Docker( DockWidget ):
     # QImage to ByteData
     def import_to_layer( image_path, layer_node, width, height):
         qimage = QImage( image_path )
-        qimage = qimage.scaled(width, height, aspectRatioMode=Qt.KeepAspectRatio, transformMode=Qt.SmoothTransformation)
+        qimage = qimage.scaled(width, height, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio, transformMode=Qt.TransformationMode.SmoothTransformation)
         if not qimage.isNull():
-            qimage.convertToFormat(QImage.Format_RGBA8888)
+            qimage.convertToFormat(QImage.Format.Format_RGBA8888)
             ptr = qimage.constBits()
             ptr.setsize( qimage.byteCount() )
             layer_node.setPixelData( bytes( ptr.asarray() ), 0, 0, qimage.width(), qimage.height() )
@@ -3317,7 +3317,7 @@ class ImagineBoard_Docker( DockWidget ):
     """
 
     """
-    qimage.convertTo( QImage.Format_ARGB32_Premultiplied )
+    qimage.convertTo( QImage.Format.Format_ARGB32_Premultiplied )
     """
 
     """
@@ -3331,7 +3331,7 @@ class ImagineBoard_Docker( DockWidget ):
 
     """
     qpixmap = QPixmap( url_source )
-    trash = QMessageBox.question( qlabel, DOCKER_NAME, message, QMessageBox.Yes, QMessageBox.Abort )
+    trash = QMessageBox.question( qlabel, DOCKER_NAME, message, QMessageBox.StandardButton.Yes, QMessageBox.StandardButton.Abort )
     """
 
     #endregion
@@ -3363,7 +3363,7 @@ class Worker_Cycle( QtCore.QObject ):
         self.tag_copy = " [COPY]"
 
         if thread == True:
-            self.source.cycle_qthread.setPriority( QThread.HighestPriority )
+            self.source.cycle_qthread.setPriority( QThread.Priority.HighestPriority )
 
         # Operation spacing
         try:QtCore.qDebug( str( self.mode ) )
@@ -3508,8 +3508,8 @@ class Worker_Cycle( QtCore.QObject ):
             message += "- Color Space Profile ( to SRGB when NONE )\n- Size Sanity\n- Format Orientation\n- Offset Alignment"
         elif self.mode == "PRE_MULTIPLY":
             message += "- Channels & Alpha Channel"
-        boolean = QMessageBox.warning( QWidget(), DOCKER_NAME, message, QMessageBox.Yes, QMessageBox.Abort )
-        if boolean == QMessageBox.Yes:
+        boolean = QMessageBox.warning( QWidget(), DOCKER_NAME, message, QMessageBox.StandardButton.Yes, QMessageBox.StandardButton.Abort )
+        if boolean == QMessageBox.StandardButton.Yes:
             self.SIGNAL_TEXT.emit( f"Modifying Images" )
             for i in range( 0, self.count ):
                 if self.cycle == False: self.SIGNAL_TEXT.emit( self.cancel ); break
@@ -3540,14 +3540,14 @@ class Worker_Cycle( QtCore.QObject ):
                             - libpng warning: iCCP: known incorrect sRGB profile
                             """
                             # Image
-                            transformation = QImageIOHandler.TransformationNone
+                            transformation = QImageIOHandler.Transformation.TransformationNone
                             # Rotation
                             reader.setAutoTransform( True )
                             qimage = reader.read()
                             # Color Space
                             named_color_space = qimage.colorSpace().NamedColorSpace()
                             if named_color_space == 0:
-                                color_space = QColorSpace( QColorSpace.SRgb ) # What about images in Grayscale ?
+                                color_space = QColorSpace( QColorSpace.NamedColorSpace.SRgb ) # What about images in Grayscale ?
                                 qimage.setColorSpace( color_space )
                         elif self.mode == "PRE_MULTIPLY":
                             qimage = reader.read()
@@ -3657,55 +3657,55 @@ class Worker_Cycle( QtCore.QObject ):
         format_fix = None
         # if value in [ 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,  25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35 ]:
         if value in range( 4, 22 ) or value in range( 25, 35 ):
-            format_fix = QImage.Format_RGB32
+            format_fix = QImage.Format.Format_RGB32
         return format_fix
     def Format_PreMult( self, value ):
         """
-        if   value == 0:  QImage.Format_Invalid
-        elif value == 1:  QImage.Format_Mono
-        elif value == 2:  QImage.Format_MonoLSB
-        elif value == 3:  QImage.Format_Indexed8
-        elif value == 4:  QImage.Format_RGB32
-        elif value == 5:  QImage.Format_ARGB32
-        elif value == 6:  QImage.Format_ARGB32_Premultiplied
-        elif value == 7:  QImage.Format_RGB16
-        elif value == 8:  QImage.Format_ARGB8565_Premultiplied
-        elif value == 9:  QImage.Format_RGB666
-        elif value == 10: QImage.Format_ARGB6666_Premultiplied
-        elif value == 11: QImage.Format_RGB555
-        elif value == 12: QImage.Format_ARGB8555_Premultiplied
-        elif value == 13: QImage.Format_RGB888
-        elif value == 14: QImage.Format_RGB444
-        elif value == 15: QImage.Format_ARGB4444_Premultiplied
-        elif value == 16: QImage.Format_RGBX8888
-        elif value == 17: QImage.Format_RGBA8888
-        elif value == 18: QImage.Format_RGBA8888_Premultiplied
-        elif value == 19: QImage.Format_BGR30
-        elif value == 20: QImage.Format_A2BGR30_Premultiplied
-        elif value == 21: QImage.Format_RGB30
-        elif value == 22: QImage.Format_A2RGB30_Premultiplied
-        elif value == 23: QImage.Format_Alpha8
-        elif value == 24: QImage.Format_Grayscale8
-        elif value == 28: QImage.Format_Grayscale16
-        elif value == 25: QImage.Format_RGBX64
-        elif value == 26: QImage.Format_RGBA64
-        elif value == 27: QImage.Format_RGBA64_Premultiplied
-        elif value == 29: QImage.Format_BGR888
-        elif value == 30: QImage.Format_RGBX16FPx4
-        elif value == 31: QImage.Format_RGBA16FPx4
-        elif value == 32: QImage.Format_RGBA16FPx4_Premultiplied
-        elif value == 33: QImage.Format_RGBX32FPx4
-        elif value == 34: QImage.Format_RGBA32FPx4
-        elif value == 35: QImage.Format_RGBA32FPx4_Premultiplied
-        elif value == 36: QImage.Format_CMYK8888
+        if   value == 0:  QImage.Format.Format_Invalid
+        elif value == 1:  QImage.Format.Format_Mono
+        elif value == 2:  QImage.Format.Format_MonoLSB
+        elif value == 3:  QImage.Format.Format_Indexed8
+        elif value == 4:  QImage.Format.Format_RGB32
+        elif value == 5:  QImage.Format.Format_ARGB32
+        elif value == 6:  QImage.Format.Format_ARGB32_Premultiplied
+        elif value == 7:  QImage.Format.Format_RGB16
+        elif value == 8:  QImage.Format.Format_ARGB8565_Premultiplied
+        elif value == 9:  QImage.Format.Format_RGB666
+        elif value == 10: QImage.Format.Format_ARGB6666_Premultiplied
+        elif value == 11: QImage.Format.Format_RGB555
+        elif value == 12: QImage.Format.Format_ARGB8555_Premultiplied
+        elif value == 13: QImage.Format.Format_RGB888
+        elif value == 14: QImage.Format.Format_RGB444
+        elif value == 15: QImage.Format.Format_ARGB4444_Premultiplied
+        elif value == 16: QImage.Format.Format_RGBX8888
+        elif value == 17: QImage.Format.Format_RGBA8888
+        elif value == 18: QImage.Format.Format_RGBA8888_Premultiplied
+        elif value == 19: QImage.Format.Format_BGR30
+        elif value == 20: QImage.Format.Format_A2BGR30_Premultiplied
+        elif value == 21: QImage.Format.Format_RGB30
+        elif value == 22: QImage.Format.Format_A2RGB30_Premultiplied
+        elif value == 23: QImage.Format.Format_Alpha8
+        elif value == 24: QImage.Format.Format_Grayscale8
+        elif value == 28: QImage.Format.Format_Grayscale16
+        elif value == 25: QImage.Format.Format_RGBX64
+        elif value == 26: QImage.Format.Format_RGBA64
+        elif value == 27: QImage.Format.Format_RGBA64_Premultiplied
+        elif value == 29: QImage.Format.Format_BGR888
+        elif value == 30: QImage.Format.Format_RGBX16FPx4
+        elif value == 31: QImage.Format.Format_RGBA16FPx4
+        elif value == 32: QImage.Format.Format_RGBA16FPx4_Premultiplied
+        elif value == 33: QImage.Format.Format_RGBX32FPx4
+        elif value == 34: QImage.Format.Format_RGBA32FPx4
+        elif value == 35: QImage.Format.Format_RGBA32FPx4_Premultiplied
+        elif value == 36: QImage.Format.Format_CMYK8888
         """
         # None means there is no equivalent Color Space to Change with that becomes premultiplied
         format_premult = None
-        if   value in [ 5, 6 ]:     format_premult = QImage.Format_ARGB32_Premultiplied
-        elif value in [ 17, 18 ]:   format_premult = QImage.Format_RGBA8888_Premultiplied
-        elif value in [ 26, 27 ]:   format_premult = QImage.Format_RGBA64_Premultiplied
-        elif value in [ 31, 32 ]:   format_premult = QImage.Format_RGBA16FPx4_Premultiplied
-        elif value in [ 34, 35 ]:   format_premult = QImage.Format_RGBA32FPx4_Premultiplied
+        if   value in [ 5, 6 ]:     format_premult = QImage.Format.Format_ARGB32_Premultiplied
+        elif value in [ 17, 18 ]:   format_premult = QImage.Format.Format_RGBA8888_Premultiplied
+        elif value in [ 26, 27 ]:   format_premult = QImage.Format.Format_RGBA64_Premultiplied
+        elif value in [ 31, 32 ]:   format_premult = QImage.Format.Format_RGBA16FPx4_Premultiplied
+        elif value in [ 34, 35 ]:   format_premult = QImage.Format.Format_RGBA32FPx4_Premultiplied
         return format_premult
 
 class Worker_Keyenter( QtCore.QObject ):
@@ -3730,7 +3730,7 @@ class Worker_Keyenter( QtCore.QObject ):
 
         # Thread
         if thread == True:
-            self.source.keyenter_qthread.setPriority( QThread.HighestPriority )
+            self.source.keyenter_qthread.setPriority( QThread.Priority.HighestPriority )
 
         # Operation spacing
         try:QtCore.qDebug( str( self.mode ) )
@@ -3801,7 +3801,7 @@ class Worker_Reorder( QtCore.QObject ):
 
         # Thread
         if thread == True:
-            self.source.cycle_qthread.setPriority( QThread.HighestPriority )
+            self.source.cycle_qthread.setPriority( QThread.Priority.HighestPriority )
 
         # Operation spacing
         try:QtCore.qDebug( str( self.mode ) )

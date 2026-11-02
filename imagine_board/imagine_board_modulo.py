@@ -28,8 +28,8 @@ import subprocess
 import webbrowser
 # Krita
 from krita import *
-# PyQt5
-from PyQt5 import QtWidgets, QtCore, QtGui, uic
+# PyQt6
+from PyQt6 import QtWidgets, QtCore, QtGui, uic, sip
 # Plugin Modules
 from .imagine_board_constants import *
 from .imagine_board_calculations import *
@@ -54,7 +54,7 @@ def Style_Icon():
     return qicon_img, qicon_anim, qicon_comp, qicon_pdf, qicon_dir, qicon_web
 def Style_Crop( qicon, os, px, py, pw, ph, s ):
     # Icons are 16x16 originally even those with margin
-    pix = qicon.pixmap( int( os * s ), int( os * s ), QIcon.Normal, QIcon.On )
+    pix = qicon.pixmap( int( os * s ), int( os * s ), QIcon.Mode.Normal, QIcon.State.On )
     pix = pix.copy( int( px * s ), int( py * s ), int( pw * s ), int( ph * s ) )
     qicon = QIcon( pix )
     return qicon
@@ -93,7 +93,7 @@ def Item_Icon( qicon, width, height ):
     mini = min( width, height )
     margin = int( mini * 0.1 )
     side = int( mini - margin )
-    ico_qpixmap = qicon.pixmap( side, side, QIcon.Normal, QIcon.On )
+    ico_qpixmap = qicon.pixmap( side, side, QIcon.Mode.Normal, QIcon.State.On )
     ico_size = Item_Size( ico_qpixmap.width(), ico_qpixmap.height(), ico_qpixmap.depth() )
     return ico_qpixmap, ico_size
 
@@ -119,7 +119,7 @@ def Fit_Compressed( url, width, height, state_fit ):
     ph = int( side * pk )
     # Defaults
     qpixmap = QPixmap( int( pw ), int( ph ) )
-    qpixmap.fill( Qt.transparent )
+    qpixmap.fill( Qt.GlobalColor.transparent )
     size = 0
     # Archive
     archive = zipfile.ZipFile( url, "r" )
@@ -156,15 +156,15 @@ def Fit_Directory( url, width, height ):
     ph = int( side * 0.58 )
     # Defaults
     qpixmap = QPixmap( int( pw ), int( ph ) )
-    qpixmap.fill( Qt.transparent )
+    qpixmap.fill( Qt.GlobalColor.transparent )
     size = 0
     # Directory
     qdir = QDir()
     qdir.setPath( url )
-    qdir.setFilter( QDir.Files | QDir.NoSymLinks | QDir.NoDotAndDotDot )
+    qdir.setFilter( QDir.Filter.Files | QDir.Filter.NoSymLinks | QDir.Filter.NoDotAndDotDot )
     qdir.setNameFilters( file_normal )
     # Files
-    it = QDirIterator( qdir, QDirIterator.NoIteratorFlags )
+    it = QDirIterator( qdir, QDirIterator.IteratorFlag.NoIteratorFlags )
     while it.hasNext():
         reader = QImageReader( it.next() )
         if reader.canRead():
@@ -176,14 +176,14 @@ def Fit_Directory( url, width, height ):
 def Stretch_Icon( reader, width, height ):
     reader.setAutoTransform( True )
     qpixmap = QPixmap().fromImageReader( reader )
-    qpixmap = qpixmap.scaled( int( width ), int( height ), Qt.IgnoreAspectRatio, Qt.FastTransformation  )
+    qpixmap = qpixmap.scaled( int( width ), int( height ), Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.FastTransformation  )
     size = Item_Size( qpixmap.width(), qpixmap.height(), qpixmap.depth() )
     return qpixmap, size
 
 # Painter
 def Painter_Triangle( painter, w2, h2, side, qcolor ):
     # Painter
-    painter.setPen( QtCore.Qt.NoPen )
+    painter.setPen( QtCore.Qt.PenStyle.NoPen )
     painter.setBrush( QBrush( qcolor ) )
     # Variables
     kw = 0.3 * side
@@ -198,7 +198,7 @@ def Painter_Triangle( painter, w2, h2, side, qcolor ):
     painter.drawPolygon( poly_tri )
 def Painter_Locked( painter, w2, h2, side, qcolor ):
     # Painter
-    painter.setPen( QtCore.Qt.NoPen )
+    painter.setPen( QtCore.Qt.PenStyle.NoPen )
     painter.setBrush( QBrush( qcolor) )
     # Variables
     kw = 0.3 * side
@@ -228,7 +228,7 @@ def Icon_Display( name ):
     icon_margin = int( ( image_size - icon_size ) * 0.5 )
     # QPixmap
     qpixmap = QPixmap( image_size, image_size )
-    qpixmap.fill( Qt.transparent )
+    qpixmap.fill( Qt.GlobalColor.transparent )
     qicon = Krita.instance().icon( name ).pixmap( QSize( icon_size, icon_size ) )    
     painter = QPainter( qpixmap )
     painter.drawPixmap( icon_margin, icon_margin, qicon )
@@ -236,7 +236,7 @@ def Icon_Display( name ):
     return qpixmap
 def Icon_Cursor( state_pickcolor, state_press ):
     if ( state_pickcolor == True and state_press == True ):
-        QApplication.setOverrideCursor( Qt.CrossCursor )
+        QApplication.setOverrideCursor( Qt.CursorShape.CrossCursor )
     else:
         QApplication.restoreOverrideCursor()
 # Color Picker
@@ -325,7 +325,7 @@ def ColorPicker_Render( self, painter, ex, ey ):
     mask_neutral.addEllipse( ex + cps_g, ey + cps_g, cps_h, cps_h )
     painter.setClipPath( mask_neutral )
     # Color Neutral
-    painter.setPen( QtCore.Qt.NoPen )
+    painter.setPen( QtCore.Qt.PenStyle.NoPen )
     painter.setBrush( QBrush( QColor( 128, 128, 128 ) ) )
     painter.drawEllipse( ex, ey, colorpicker_size, colorpicker_size )
 
@@ -335,7 +335,7 @@ def ColorPicker_Render( self, painter, ex, ey ):
     mask_previous.addEllipse( ex + cps_e, ey + cps_e, cps_f, cps_f )
     painter.setClipPath( mask_previous )
     # Color Previous
-    painter.setPen( QtCore.Qt.NoPen )
+    painter.setPen( QtCore.Qt.PenStyle.NoPen )
     painter.setBrush( QBrush( self.color_previous ) )
     painter.drawEllipse( ex, ey, colorpicker_size, colorpicker_size )
 
@@ -345,7 +345,7 @@ def ColorPicker_Render( self, painter, ex, ey ):
     mask_previous.addEllipse( ex + cps_e, ey + cps_e, cps_f, cps_f )
     painter.setClipPath( mask_previous )
     # Color Previous
-    painter.setPen( QtCore.Qt.NoPen )
+    painter.setPen( QtCore.Qt.PenStyle.NoPen )
     painter.setBrush( QBrush( self.color_active ) )
     painter.drawEllipse( ex, ey, colorpicker_size, colorpicker_size )
 
@@ -411,7 +411,7 @@ def File_Move_Trash( lista ):
             # Variables
             basename = os.path.basename( url )
             message = f"Send to Trash?\n{ basename }"
-            pix = QPixmap( url ).scaled( s2, s2, Qt.KeepAspectRatio, Qt.FastTransformation )
+            pix = QPixmap( url ).scaled( s2, s2, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.FastTransformation )
             if pix.isNull() == True:
                 if os.path.isdir( url ) == True:            pix = qicon_dir.pixmap( s1, s1 )
                 elif zipfile.is_zipfile( url ) == True:     pix = qicon_comp.pixmap( s1, s1 )
@@ -429,17 +429,17 @@ def File_Move_Trash( lista ):
             # Message Box
             qmessage_box = QMessageBox()
             qmessage_box.setText( message )
-            if len_lista == 1:  buttons = QMessageBox.Yes | QMessageBox.No | QMessageBox.Abort
-            elif len_lista > 1: buttons = QMessageBox.YesToAll | QMessageBox.Yes | QMessageBox.No | QMessageBox.Abort
+            if len_lista == 1:  buttons = QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Abort
+            elif len_lista > 1: buttons = QMessageBox.StandardButton.YesToAll | QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Abort
             qmessage_box.setStandardButtons( buttons )
             qmessage_box.setIconPixmap( qpixmap )
             answer = qmessage_box.exec()
         else:
-            answer = QMessageBox.Yes
+            answer = QMessageBox.StandardButton.Yes
         # Answer
-        if   answer == QMessageBox.Yes:             Move_to_Trash( url )
-        elif answer == QMessageBox.YesToAll:        Move_to_Trash( url ); ask = False
-        elif answer == QMessageBox.Abort:           break
+        if   answer == QMessageBox.StandardButton.Yes:             Move_to_Trash( url )
+        elif answer == QMessageBox.StandardButton.YesToAll:        Move_to_Trash( url ); ask = False
+        elif answer == QMessageBox.StandardButton.Abort:           break
 def Move_to_Trash( url ):
     qfile = QFile( url )
     qfile.moveToTrash()
@@ -629,7 +629,7 @@ def Embed_Reference_Pixel( self, image_url, clip ):
 def Create_Image_Clip( self, image_url, clip ):
     # Default
     qpixmap = QPixmap( 1, 1 )
-    qpixmap.fill( Qt.transparent )
+    qpixmap.fill( Qt.GlobalColor.transparent )
     # Reader
     reader = QImageReader( image_url )
     reader.setAutoTransform( True )
@@ -649,7 +649,7 @@ def Create_Image_Clip( self, image_url, clip ):
         # Scale
         ad = Krita.instance().activeDocument()
         if self.insert_original_size == False and ad != None:
-            qpixmap = qpixmap.scaled( ad.width(), ad.height(), Qt.KeepAspectRatio, self.scale_method )
+            qpixmap = qpixmap.scaled( ad.width(), ad.height(), Qt.AspectRatioMode.KeepAspectRatio, self.scale_method )
     return qpixmap
 def Create_Mime_Data( lista, qpixmap ):
     mime_list = list()
@@ -672,7 +672,7 @@ def Create_Thumbnail( self, qpixmap, mimedata ):
     # Display
     size = 200
     if qpixmap.isNull() == False:
-        qpixmap = qpixmap.scaled( size, size, Qt.KeepAspectRatio, Qt.FastTransformation )
+        qpixmap = qpixmap.scaled( size, size, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.FastTransformation )
     # Variables
     ww = int( qpixmap.width() * 0.5 )
     hh = int( qpixmap.height() * 0.5 )
@@ -681,7 +681,7 @@ def Create_Thumbnail( self, qpixmap, mimedata ):
     drag.setHotSpot( QPoint( ww, hh ) )
     drag.setMimeData( mimedata )
     drag.setPixmap( qpixmap )
-    drag.exec_( Qt.CopyAction )
+    drag.exec( Qt.DropAction.CopyAction )
 
 # Information
 def Information_Format( value ):
@@ -725,25 +725,25 @@ def Information_Format( value ):
     elif value == 36: image_format = "CMYK8888"
     return image_format
 def Information_Fit( boolean ):
-    if   boolean == True:    fit = Qt.KeepAspectRatio
-    elif boolean == False:   fit = Qt.KeepAspectRatioByExpanding
+    if   boolean == True:    fit = Qt.AspectRatioMode.KeepAspectRatio
+    elif boolean == False:   fit = Qt.AspectRatioMode.KeepAspectRatioByExpanding
     return fit
 def Information_Orientation( reader ):
     """
-    QImageIOHandler.TransformationNone
-    QImageIOHandler.TransformationMirror
-    QImageIOHandler.TransformationFlip
-    QImageIOHandler.TransformationRotate180
-    QImageIOHandler.TransformationRotate90
-    QImageIOHandler.TransformationMirrorAndRotate90
-    QImageIOHandler.TransformationFlipAndRotate90
-    QImageIOHandler.TransformationRotate270
+    QImageIOHandler.Transformation.TransformationNone
+    QImageIOHandler.Transformation.TransformationMirror
+    QImageIOHandler.Transformation.TransformationFlip
+    QImageIOHandler.Transformation.TransformationRotate180
+    QImageIOHandler.Transformation.TransformationRotate90
+    QImageIOHandler.Transformation.TransformationMirrorAndRotate90
+    QImageIOHandler.Transformation.TransformationFlipAndRotate90
+    QImageIOHandler.Transformation.TransformationRotate270
     """
     rotate = False
     rt = reader.transformation()
-    if rt == QImageIOHandler.TransformationRotate90:            rotate = True
-    if rt == QImageIOHandler.TransformationFlipAndRotate90:     rotate = True
-    if rt == QImageIOHandler.TransformationRotate270:           rotate = True
+    if rt == QImageIOHandler.Transformation.TransformationRotate90:            rotate = True
+    if rt == QImageIOHandler.Transformation.TransformationFlipAndRotate90:     rotate = True
+    if rt == QImageIOHandler.Transformation.TransformationRotate270:           rotate = True
     return rotate
 
 # Pigment.O
@@ -856,15 +856,15 @@ def Overlay_Painter( self, painter, text, limit ):
     box_sqr = QRect( int( px ), int( py ), int( pw ), int( ph+rr ) )
     box_txt = QRect( int( px+m2 ), int( py+m ), int( pw-m4 ), int( ph ) )
     # Highlight
-    painter.setPen( QtCore.Qt.NoPen )
+    painter.setPen( QtCore.Qt.PenStyle.NoPen )
     painter.setBrush( QBrush( cor ) )
     painter.drawRoundedRect( box_sqr, rr, rr )
     # String
-    painter.setBrush( QtCore.Qt.NoBrush )
-    painter.setPen( QPen( self.c_text, 1, Qt.SolidLine ) )
+    painter.setBrush( QtCore.Qt.BrushStyle.NoBrush )
+    painter.setPen( QPen( self.c_text, 1, Qt.PenStyle.SolidLine ) )
     qfont = QFont( "Consolas", 10 )
     painter.setFont( qfont )
-    painter.drawText( box_txt, Qt.AlignLeft | Qt.AlignTop | Qt.TextWordWrap, text )
+    painter.drawText( box_txt, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop | Qt.TextFlag.TextWordWrap, text )
     # Garbage
     del qfont
 
@@ -999,7 +999,7 @@ class ImagineBoard_Preview( QtWidgets.QWidget ):
 
         # System
         self.insert_original_size = False
-        self.scale_method = Qt.SmoothTransformation
+        self.scale_method = Qt.TransformationMode.SmoothTransformation
 
         # Drag and Drop
         self.setAcceptDrops( True )
@@ -1080,7 +1080,7 @@ class ImagineBoard_Preview( QtWidgets.QWidget ):
             self.preview_format = reader.format()
             self.preview_image_format = Information_Format( reader.imageFormat() )
             qcolor = reader.backgroundColor()
-            self.preview_color_name = qcolor.name( QColor.HexArgb )
+            self.preview_color_name = qcolor.name( QColor.NameFormat.HexArgb )
             # Meta Data
             preview_text = list()
             text_keys = reader.textKeys()
@@ -1451,7 +1451,7 @@ class ImagineBoard_Preview( QtWidgets.QWidget ):
         #region Action
 
         # Mapping
-        action = qmenu.exec_( self.mapToGlobal( event.pos() ) )
+        action = qmenu.exec( self.mapToGlobal( event.position().toPoint() ) )
         # General
         if action == action_pin_reference:
             self.PREVIEW_PIN_INSERT.emit( "image", self.w2, self.h2, None, self.preview_url, clip )
@@ -1644,7 +1644,7 @@ class ImagineBoard_Preview( QtWidgets.QWidget ):
     # Export
     def Export_Directory( self ):
         file_dialog = QFileDialog( QWidget( self ) )
-        file_dialog.setFileMode( QFileDialog.DirectoryOnly )
+        file_dialog.setFileMode( QFileDialog.FileMode.Directory )
         save_folder = file_dialog.getExistingDirectory( self, "Select Directory", self.preview_url )
         return save_folder
     def Export_Image( self, directory, lista, index ):
@@ -1726,8 +1726,8 @@ class ImagineBoard_Preview( QtWidgets.QWidget ):
         # Event
         em = event.modifiers()
         eb = event.buttons()
-        ex = event.x()
-        ey = event.y()
+        ex = int( event.position().x() )
+        ey = int( event.position().y() )
         self.ox = ex
         self.oy = ey
         self.ex = ex
@@ -1735,7 +1735,7 @@ class ImagineBoard_Preview( QtWidgets.QWidget ):
         # Cursor
         Icon_Cursor( self.state_pickcolor, self.state_press )
         # LMB
-        if em == QtCore.Qt.NoModifier and eb == QtCore.Qt.LeftButton:
+        if em == QtCore.Qt.KeyboardModifier.NoModifier and eb == QtCore.Qt.MouseButton.LeftButton:
             if ( self.state_pickcolor == True and self.anim_play == False ):
                 self.operation = "color_picker"
                 ColorPicker_Event( self, ex, ey, self.qimage_grab, True )
@@ -1744,24 +1744,24 @@ class ImagineBoard_Preview( QtWidgets.QWidget ):
                 self.Clip_Node( ex, ey )
             else:
                 self.operation = "information"
-        if em == QtCore.Qt.ShiftModifier and eb == QtCore.Qt.LeftButton:
+        if em == QtCore.Qt.KeyboardModifier.ShiftModifier and eb == QtCore.Qt.MouseButton.LeftButton:
             self.operation = "camera_move"
             self.Camera_Previous()
-        if em == QtCore.Qt.ControlModifier and eb == QtCore.Qt.LeftButton:
+        if em == QtCore.Qt.KeyboardModifier.ControlModifier and eb == QtCore.Qt.MouseButton.LeftButton:
             self.operation = "pagination"
             self.Camera_Reset()
-        if em == QtCore.Qt.AltModifier and eb == QtCore.Qt.LeftButton:
+        if em == QtCore.Qt.KeyboardModifier.AltModifier and eb == QtCore.Qt.MouseButton.LeftButton:
             self.operation = "drag_drop"
             self.Clip_Image()
         # MMB
-        if em == QtCore.Qt.NoModifier and eb == QtCore.Qt.MiddleButton:
+        if em == QtCore.Qt.KeyboardModifier.NoModifier and eb == QtCore.Qt.MouseButton.MiddleButton:
             self.operation = "camera_move"
             self.Camera_Previous()
         # RMB
-        if em == QtCore.Qt.NoModifier and eb == QtCore.Qt.RightButton:
+        if em == QtCore.Qt.KeyboardModifier.NoModifier and eb == QtCore.Qt.MouseButton.RightButton:
             self.operation = None
             self.Context_Menu( event )
-        if em == QtCore.Qt.ShiftModifier and eb == QtCore.Qt.RightButton:
+        if em == QtCore.Qt.KeyboardModifier.ShiftModifier and eb == QtCore.Qt.MouseButton.RightButton:
             self.operation = "camera_swap"
             self.Camera_Previous()
         # Update
@@ -1770,8 +1770,8 @@ class ImagineBoard_Preview( QtWidgets.QWidget ):
         # Variable
         self.state_press = True
         # Event
-        ex = event.x()
-        ey = event.y()
+        ex = int( event.position().x() )
+        ey = int( event.position().y() )
         self.ex = ex
         self.ey = ey
         # Neutral
@@ -1805,13 +1805,13 @@ class ImagineBoard_Preview( QtWidgets.QWidget ):
         em = event.modifiers()
         eb = event.buttons()
         # LMB
-        if ( em == QtCore.Qt.NoModifier and eb == QtCore.Qt.LeftButton ):
+        if ( em == QtCore.Qt.KeyboardModifier.NoModifier and eb == QtCore.Qt.MouseButton.LeftButton ):
             self.PREVIEW_MODE.emit( 1, False )
-        if ( em == QtCore.Qt.ShiftModifier and eb == QtCore.Qt.LeftButton ):
+        if ( em == QtCore.Qt.KeyboardModifier.ShiftModifier and eb == QtCore.Qt.MouseButton.LeftButton ):
             if os.path.isdir( url ):
                 self.PREVIEW_LOAD.emit( url, None, 0 )
         # RMB
-        if ( em == QtCore.Qt.ShiftModifier and eb == QtCore.Qt.RightButton ):
+        if ( em == QtCore.Qt.KeyboardModifier.ShiftModifier and eb == QtCore.Qt.MouseButton.RightButton ):
             self.PREVIEW_PARENT.emit()
     def mouseReleaseEvent( self, event ):
         # Variables
@@ -1862,7 +1862,7 @@ class ImagineBoard_Preview( QtWidgets.QWidget ):
         mime_data, format_id = Insert_Drop( self, event )
         if len( mime_data ) > 0 or format_id == drag_id:
             if ( self.drop == True and self.drag == False ):
-                event.setDropAction( Qt.CopyAction )
+                event.setDropAction( Qt.DropAction.CopyAction )
                 self.PREVIEW_DROP.emit( mime_data )
             event.accept()
         else:
@@ -1887,10 +1887,10 @@ class ImagineBoard_Preview( QtWidgets.QWidget ):
 
         # Painter
         painter = QPainter( self )
-        painter.setRenderHint( QtGui.QPainter.Antialiasing, True )
+        painter.setRenderHint( QtGui.QPainter.RenderHint.Antialiasing, True )
 
         # Mask
-        painter.setClipRect( QRect( int( 0 ), int( 0 ), int( ww ), int( hh ) ), Qt.ReplaceClip )
+        painter.setClipRect( QRect( int( 0 ), int( 0 ), int( ww ), int( hh ) ), Qt.ClipOperation.ReplaceClip )
 
         # Path
         url = self.preview_url
@@ -1951,7 +1951,7 @@ class ImagineBoard_Preview( QtWidgets.QWidget ):
             else:                           merge.fill( self.transparent )
             # Merge Layers
             qpainter = QPainter( merge )
-            qpainter.setRenderHint( QPainter.Antialiasing, True )
+            qpainter.setRenderHint( QPainter.RenderHint.Antialiasing, True )
 
             # Directory Thumbnail
             if dir_thumb != None:
@@ -1968,8 +1968,8 @@ class ImagineBoard_Preview( QtWidgets.QWidget ):
             # GridLines
             if self.state_gridline == True:
                 line_width = 4
-                qpainter.setPen( QPen( self.c_chrome, line_width, Qt.SolidLine, Qt.SquareCap, Qt.MiterJoin ) )
-                qpainter.setBrush( QtCore.Qt.NoBrush )
+                qpainter.setPen( QPen( self.c_chrome, line_width, Qt.PenStyle.SolidLine, Qt.PenCapStyle.SquareCap, Qt.PenJoinStyle.MiterJoin ) )
+                qpainter.setBrush( QtCore.Qt.BrushStyle.NoBrush )
                 for i in range( 0, self.gridline_x + 1 ):
                     ix = i / self.gridline_x
                     qpainter.drawLine( int( dw * ix ), int( 0 ), int( dw * ix ), int( dh ) )
@@ -1980,7 +1980,7 @@ class ImagineBoard_Preview( QtWidgets.QWidget ):
             # Clip
             if self.state_clip == True:
                 # Painter
-                qpainter.setPen( QtCore.Qt.NoPen )
+                qpainter.setPen( QtCore.Qt.PenStyle.NoPen )
                 qpainter.setBrush( QBrush( color_alpha ) )
 
                 # Variables
@@ -2003,8 +2003,8 @@ class ImagineBoard_Preview( QtWidgets.QWidget ):
                 qpainter.drawPath( area )
 
                 # Triangles
-                qpainter.setPen( QPen( color_black, 2, Qt.SolidLine ) )
-                qpainter.setBrush( QBrush( color_white, Qt.SolidPattern ) )
+                qpainter.setPen( QPen( color_black, 2, Qt.PenStyle.SolidLine ) )
+                qpainter.setBrush( QBrush( color_white, Qt.BrushStyle.SolidPattern ) )
                 poly1 = QPolygon( [
                     QPoint( int( pl ), int( pt ) ),
                     QPoint( int( pl + tri ), int( pt ) ),
@@ -2042,7 +2042,7 @@ class ImagineBoard_Preview( QtWidgets.QWidget ):
             if self.cam_r != 0:
                 merge, wr, hr, rew, reh = self.Draw_Rotate( merge, dw, dh )
             # Scale
-            merge = merge.scaled( int( width * rew * self.cam_z ), int( height * reh * self.cam_z ), Qt.KeepAspectRatio, self.scale_method )
+            merge = merge.scaled( int( width * rew * self.cam_z ), int( height * reh * self.cam_z ), Qt.AspectRatioMode.KeepAspectRatio, self.scale_method )
             draw_width = merge.width()
             draw_height = merge.height()
 
@@ -2062,7 +2062,7 @@ class ImagineBoard_Preview( QtWidgets.QWidget ):
     def Draw_Rotate( self, image, dw, dh ):
         draw = image
         if self.cam_r != 0:
-            rotation = QTransform().rotate( self.cam_r, Qt.ZAxis )
+            rotation = QTransform().rotate( self.cam_r, Qt.Axis.ZAxis )
             draw = image.transformed( rotation )
         wr = draw.width()
         hr = draw.height()
@@ -2070,7 +2070,7 @@ class ImagineBoard_Preview( QtWidgets.QWidget ):
         reh = hr / dh
         return draw, wr, hr, rew, reh
     def Draw_Circle( self, painter, color, px, py, side ):
-        painter.setPen( QtCore.Qt.NoPen )
+        painter.setPen( QtCore.Qt.PenStyle.NoPen )
         painter.setBrush( QBrush( color ) )
         ox = 0.2 * side
         oy = 0.2 * side
@@ -2087,17 +2087,17 @@ class ImagineBoard_Preview( QtWidgets.QWidget ):
             box = QRect( int( px ), int( py + iy ), int( pixw ), int( pixh * 0.2 ) )
             """
             # Highlight
-            painter.setPen( QtCore.Qt.NoPen )
+            painter.setPen( QtCore.Qt.PenStyle.NoPen )
             painter.setBrush( QBrush( self.c_chrome ) )
             painter.drawRect( box )
             """
             # String
-            painter.setBrush( QtCore.Qt.NoBrush )
-            painter.setPen( QPen( self.c_dark, 1, Qt.SolidLine ) )
+            painter.setBrush( QtCore.Qt.BrushStyle.NoBrush )
+            painter.setPen( QPen( self.c_dark, 1, Qt.PenStyle.SolidLine ) )
             qfont = QFont( "Consolas" )
             qfont.setPointSize( 10 )
             painter.setFont( qfont )
-            painter.drawText( box, QtCore.Qt.AlignCenter|QtCore.Qt.TextWordWrap, basename )
+            painter.drawText( box, QtCore.Qt.AlignmentFlag.AlignCenter|QtCore.Qt.TextFlag.TextWordWrap, basename )
             # Garbage
             del qfont
 
@@ -2152,7 +2152,7 @@ class ImagineBoard_Grid( QtWidgets.QWidget ):
         self.grid_precache = 200 # Mb
         self.grid_clean = 0
         self.grid_construct = list()
-        self.grid_method = Qt.SmoothTransformation
+        self.grid_method = Qt.TransformationMode.SmoothTransformation
         self.grid_state = None # None "FILE" "ANIM" "COMP" "DIR" "WEB"
         # Grid Unit
         self.gix = 0
@@ -2196,7 +2196,7 @@ class ImagineBoard_Grid( QtWidgets.QWidget ):
 
         # System
         self.insert_original_size = False
-        self.scale_method = Qt.SmoothTransformation
+        self.scale_method = Qt.TransformationMode.SmoothTransformation
 
         # Icons
         self.qpixmap_comp, self.comp_size = None, 0
@@ -2211,7 +2211,8 @@ class ImagineBoard_Grid( QtWidgets.QWidget ):
         self.drag = False
 
         # QTimer
-        self.grid_qtimer = QtCore.QTimer()
+        self.grid_qtimer = QtCore.QTimer( self )
+        self.destroyed.connect( self.grid_qtimer.stop )
 
     # Relay Neutral
     def Set_Pigment_O( self, pigmento_picker, pigmento_sampler ):
@@ -2359,7 +2360,12 @@ class ImagineBoard_Grid( QtWidgets.QWidget ):
             self.gth = 1
         # Return
         self.grid_construct = grid_construct
+    def Grid_Is_Alive( self ):
+        # Local patch: deferred callbacks can fire after Qt destroyed this widget
+        return not sip.isdeleted( self )
     def Grid_Image( self, update ):
+        if not self.Grid_Is_Alive():
+            return
         # Icons
         if update == True:
             self.qpixmap_comp, self.comp_size = Item_Icon( self.qicon_comp, self.gtw, self.gth )
@@ -2441,6 +2447,8 @@ class ImagineBoard_Grid( QtWidgets.QWidget ):
             self.list_start = self.list_geo_end - self.guc
         self.list_end = min( self.list_geo_end, self.list_count )
     def List_Load( self, start, end, list_index, list_url, update ):
+        if not self.Grid_Is_Alive():
+            return
         # Variables
         amplitude = end - start
         check = amplitude > 100
@@ -2717,7 +2725,7 @@ class ImagineBoard_Grid( QtWidgets.QWidget ):
         # Mapping
         len_path = len( self.list_url )
         if self.list_geo_index < len_path:
-            action = qmenu.exec_( self.mapToGlobal( event.pos() ) )
+            action = qmenu.exec( self.mapToGlobal( event.position().toPoint() ) )
             # General
             if action == action_pin_reference:
                 self.Selection_PinInsert( list_url )
@@ -2774,8 +2782,8 @@ class ImagineBoard_Grid( QtWidgets.QWidget ):
         # Event
         em = event.modifiers()
         eb = event.buttons()
-        ex = event.x()
-        ey = event.y()
+        ex = int( event.position().x() )
+        ey = int( event.position().y() )
         self.ox = ex
         self.oy = ey
         self.ex = ex
@@ -2784,35 +2792,35 @@ class ImagineBoard_Grid( QtWidgets.QWidget ):
         Icon_Cursor( self.state_pickcolor, self.state_press )
         self.Grid_Index( ex, ey )
         # LMB
-        if em == QtCore.Qt.NoModifier and eb == QtCore.Qt.LeftButton:
+        if em == QtCore.Qt.KeyboardModifier.NoModifier and eb == QtCore.Qt.MouseButton.LeftButton:
             if self.state_pickcolor == True:
                 self.operation = "color_picker"
                 ColorPicker_Event( self, ex, ey, self.qimage_grab, True )
             else:
                 self.operation = "neutral_press"
-        if em == QtCore.Qt.ShiftModifier and eb == QtCore.Qt.LeftButton:
+        if em == QtCore.Qt.KeyboardModifier.ShiftModifier and eb == QtCore.Qt.MouseButton.LeftButton:
             self.operation = "camera_move"
             self.Camera_Reset( ex, ey )
-        if em == QtCore.Qt.ControlModifier and eb == QtCore.Qt.LeftButton:
+        if em == QtCore.Qt.KeyboardModifier.ControlModifier and eb == QtCore.Qt.MouseButton.LeftButton:
             self.operation = "select_plus"
             self.Selection_Plus( ex, ey )
-        if em == QtCore.Qt.AltModifier and eb == QtCore.Qt.LeftButton:
+        if em == QtCore.Qt.KeyboardModifier.AltModifier and eb == QtCore.Qt.MouseButton.LeftButton:
             self.operation = "drag_drop"
         # MMB
-        if em == QtCore.Qt.NoModifier and eb == QtCore.Qt.MiddleButton:
+        if em == QtCore.Qt.KeyboardModifier.NoModifier and eb == QtCore.Qt.MouseButton.MiddleButton:
             self.operation = "camera_move"
             self.Camera_Reset( ex, ey )
         # RMB
-        if em == QtCore.Qt.NoModifier and eb == QtCore.Qt.RightButton:
+        if em == QtCore.Qt.KeyboardModifier.NoModifier and eb == QtCore.Qt.MouseButton.RightButton:
             self.operation = None
             self.Context_Menu( event )
-        if em == QtCore.Qt.ShiftModifier and eb == QtCore.Qt.RightButton:
+        if em == QtCore.Qt.KeyboardModifier.ShiftModifier and eb == QtCore.Qt.MouseButton.RightButton:
             self.operation = "camera_move"
             self.Camera_Reset( ex, ey )
-        if em == QtCore.Qt.ControlModifier and eb == QtCore.Qt.RightButton:
+        if em == QtCore.Qt.KeyboardModifier.ControlModifier and eb == QtCore.Qt.MouseButton.RightButton:
             self.operation = "select_minus"
             self.Selection_Minus( ex, ey )
-        if em == QtCore.Qt.AltModifier and eb == QtCore.Qt.RightButton:
+        if em == QtCore.Qt.KeyboardModifier.AltModifier and eb == QtCore.Qt.MouseButton.RightButton:
             self.operation = "drag_drop"
         # Update
         self.update()
@@ -2820,8 +2828,8 @@ class ImagineBoard_Grid( QtWidgets.QWidget ):
         # Variable
         self.state_press = True
         # Event
-        ex = event.x()
-        ey = event.y()
+        ex = int( event.position().x() )
+        ey = int( event.position().y() )
         self.ex = ex
         self.ey = ey
         # Neutral
@@ -2852,17 +2860,17 @@ class ImagineBoard_Grid( QtWidgets.QWidget ):
         em = event.modifiers()
         eb = event.buttons()
         # LMB
-        if em == QtCore.Qt.NoModifier and eb == QtCore.Qt.LeftButton:
+        if em == QtCore.Qt.KeyboardModifier.NoModifier and eb == QtCore.Qt.MouseButton.LeftButton:
             self.GRID_MODE.emit( 0, False )
-        if em == QtCore.Qt.ShiftModifier and eb == QtCore.Qt.LeftButton:
+        if em == QtCore.Qt.KeyboardModifier.ShiftModifier and eb == QtCore.Qt.MouseButton.LeftButton:
             if os.path.isdir( url ):
                 self.GRID_LOAD.emit( url, None, 0 )
-        if em == QtCore.Qt.ControlModifier and eb == QtCore.Qt.LeftButton:
+        if em == QtCore.Qt.KeyboardModifier.ControlModifier and eb == QtCore.Qt.MouseButton.LeftButton:
             self.Selection_All()
         # RMB
-        if em == QtCore.Qt.ShiftModifier and eb == QtCore.Qt.RightButton:
+        if em == QtCore.Qt.KeyboardModifier.ShiftModifier and eb == QtCore.Qt.MouseButton.RightButton:
             self.GRID_PARENT.emit()
-        if em == QtCore.Qt.ControlModifier and eb == QtCore.Qt.RightButton:
+        if em == QtCore.Qt.KeyboardModifier.ControlModifier and eb == QtCore.Qt.MouseButton.RightButton:
             self.Selection_Clear()
     def mouseReleaseEvent( self, event ):
         # Variables
@@ -2935,7 +2943,7 @@ class ImagineBoard_Grid( QtWidgets.QWidget ):
         mime_data, format_id = Insert_Drop( self, event )
         if len( mime_data ) > 0 or format_id == drag_id:
             if ( self.drop == True and self.drag == False ):
-                event.setDropAction( Qt.CopyAction )
+                event.setDropAction( Qt.DropAction.CopyAction )
                 self.GRID_DROP.emit( mime_data )
             event.accept()
         else:
@@ -2950,14 +2958,19 @@ class ImagineBoard_Grid( QtWidgets.QWidget ):
         self.Grid_Timer_Stop()
         self.Grid_Timer_Start( lambda: self.Grid_Image( True ) )
     def Grid_Timer_Start( self, function ):
-        self.grid_qtimer = QtCore.QTimer()
+        self.grid_qtimer = QtCore.QTimer( self )
         self.grid_qtimer.setSingleShot( True )
         self.grid_qtimer.setInterval( 1000 )
-        self.grid_qtimer.timeout.connect( function )
+        self.grid_qtimer.timeout.connect( self.Grid_Timer_Guard( function ) )
         self.grid_qtimer.start()
     def Grid_Timer_Stop( self ):
         try:self.grid_qtimer.stop()
         except:pass
+    def Grid_Timer_Guard( self, function ):
+        def guarded():
+            if self.Grid_Is_Alive():
+                function()
+        return guarded
 
     # Widget
     def showEvent( self, event ):
@@ -2970,6 +2983,8 @@ class ImagineBoard_Grid( QtWidgets.QWidget ):
         self.Grid_Unload()
         self.update()
     def closeEvent( self, event ):
+        self.Grid_Timer_Stop()
+    def hideEvent( self, event ):
         self.Grid_Timer_Stop()
 
     # Painter
@@ -2984,7 +2999,7 @@ class ImagineBoard_Grid( QtWidgets.QWidget ):
 
         # Painter
         painter = QPainter( self )
-        painter.setRenderHint( QtGui.QPainter.Antialiasing, True )
+        painter.setRenderHint( QtGui.QPainter.RenderHint.Antialiasing, True )
 
         # Draw QPixmaps
         length = len( self.list_qpixmap )
@@ -3008,7 +3023,7 @@ class ImagineBoard_Grid( QtWidgets.QWidget ):
 
                 # Clip Mask
                 thumbnail = QRect( int( px ), int( py ), int( pw+1 ), int( ph+1 ) ) # +1 clears float error
-                painter.setClipRect( thumbnail, Qt.ReplaceClip )
+                painter.setClipRect( thumbnail, Qt.ClipOperation.ReplaceClip )
 
                 # Variables
                 index = self.list_start + geo_index
@@ -3096,30 +3111,30 @@ class ImagineBoard_Grid( QtWidgets.QWidget ):
         check_dir_select = self.list_basename == basename
         # Highlight Under Text
         if check_dir_select == True:
-            painter.setPen( QtCore.Qt.NoPen )
+            painter.setPen( QtCore.Qt.PenStyle.NoPen )
             painter.setBrush( QBrush( self.c_chrome ) )
             painter.drawRect( box )
         # String
         limit = 0.4
-        painter.setBrush( QtCore.Qt.NoBrush )
-        if check_dir_select == True:    painter.setPen( QPen( self.c_folder, 1, Qt.SolidLine ) )
-        else:                           painter.setPen( QPen( self.c_dark, 1, Qt.SolidLine ) )
+        painter.setBrush( QtCore.Qt.BrushStyle.NoBrush )
+        if check_dir_select == True:    painter.setPen( QPen( self.c_folder, 1, Qt.PenStyle.SolidLine ) )
+        else:                           painter.setPen( QPen( self.c_dark, 1, Qt.PenStyle.SolidLine ) )
         qfont = QFont( "Consolas" )
         qfont.setPointSize( 10 )
         painter.setFont( qfont )
-        painter.drawText( box, QtCore.Qt.AlignCenter|QtCore.Qt.TextWordWrap, basename )
+        painter.drawText( box, QtCore.Qt.AlignmentFlag.AlignCenter|QtCore.Qt.TextFlag.TextWordWrap, basename )
         # Garbage
         del qfont
     def Draw_Circle( self, painter, color, px, py, thumb ):
-        painter.setPen( QtCore.Qt.NoPen )
+        painter.setPen( QtCore.Qt.PenStyle.NoPen )
         painter.setBrush( QBrush( color ) )
         side = 0.6
         ox = ( self.gtw * 0.5 ) - ( side * thumb * 0.5 )
         oy = ( self.gth * 0.5 ) - ( side * thumb * 0.5 )
         painter.drawEllipse( int( px + ox ), int( py + oy ), int( side * thumb ), int( side * thumb ) )
     def Draw_Select( self, painter, color, px, py, pw, ph ):
-        painter.setPen( QtCore.Qt.NoPen )
-        painter.setBrush( QBrush( color, Qt.Dense3Pattern ) )
+        painter.setPen( QtCore.Qt.PenStyle.NoPen )
+        painter.setBrush( QBrush( color, Qt.BrushStyle.Dense3Pattern ) )
         m = 4
         painter.drawRect( int( px ), int( py ), int( pw + m ), int( ph + m ) )
 
@@ -3353,7 +3368,7 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
 
         # System
         self.insert_original_size = False
-        self.scale_method = Qt.SmoothTransformation
+        self.scale_method = Qt.TransformationMode.SmoothTransformation
 
         # Drag and Drop
         self.setAcceptDrops( True )
@@ -3723,7 +3738,7 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
         # Update
         self.update()
     def Pin_URL( self, bx, by ):
-        url, ok = QInputDialog.getText( self, "Link Image", "URL", QLineEdit.Normal, "" )
+        url, ok = QInputDialog.getText( self, "Link Image", "URL", QLineEdit.EchoMode.Normal, "" )
         if ok and url != "":
             self.REFERENCE_PIN_INSERT.emit( "image", bx, by, None, url, clip_false )
     def Pin_Update( self ):
@@ -3932,7 +3947,7 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
     def Edit_QPixmap( self, source, egs, efx, efy ):
         source = source.toImage()
         if egs == True:
-            source = source.convertToFormat( QImage.Format_Grayscale8 )
+            source = source.convertToFormat( QImage.Format.Format_Grayscale8 )
         if ( efx == True or efy == True ):
             source = source.mirrored( efx, efy )
         draw = QPixmap().fromImage( source )
@@ -3941,16 +3956,16 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
         w = width * self.cam_z
         h = height * self.cam_z
         if( self.state_inside == False and self.scale_method == True ):
-            draw = source.scaled( int( w ), int( h ), Qt.IgnoreAspectRatio, Qt.SmoothTransformation )
+            draw = source.scaled( int( w ), int( h ), Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.SmoothTransformation )
         else:
-            draw = source.scaled( int( w ), int( h ), Qt.IgnoreAspectRatio, Qt.FastTransformation )
+            draw = source.scaled( int( w ), int( h ), Qt.AspectRatioMode.IgnoreAspectRatio, Qt.TransformationMode.FastTransformation )
         draw = draw.copy( int( w ), int( h ), int( w ), int( h ) ) # Cut the error
         return draw
     def Rotate_QPixmap( self, source, angle ):
         if angle == 0:
             draw = source
         else:
-            rotation = QTransform().rotate( angle, Qt.ZAxis )
+            rotation = QTransform().rotate( angle, Qt.Axis.ZAxis )
             draw = source.transformed( rotation )
         return draw
 
@@ -4664,7 +4679,7 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
 
     # Label ( Text )
     def Label_Insert( self, event ):
-        pos = event.pos()
+        pos = event.position().toPoint()
         bx, by = self.Point_Location( pos.x(), pos.y() )
         self.REFERENCE_PIN_INSERT.emit( "label", bx, by, "Text", None, clip_false )
     def Label_List( self ):
@@ -4683,19 +4698,19 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
         
     # Cursor
     def Cursor_Shape( self, operation, pin_node ):
-        if operation == "color_picker":                                                 QApplication.setOverrideCursor( Qt.CrossCursor )
+        if operation == "color_picker":                                                 QApplication.setOverrideCursor( Qt.CursorShape.CrossCursor )
         elif operation in [ "pin_move", "pin_transform" ]:
-            if pin_node == 0:                                                           QApplication.setOverrideCursor( Qt.SizeAllCursor )
-            elif pin_node == 5:                                                         QApplication.setOverrideCursor( Qt.SizeHorCursor )
-            elif pin_node in ( 1, 9 ):                                                  QApplication.setOverrideCursor( Qt.SizeFDiagCursor )
-            elif pin_node in ( 3, 7 ):                                                  QApplication.setOverrideCursor( Qt.SizeBDiagCursor )
-            elif pin_node in ( 2, 8 ):                                                  QApplication.setOverrideCursor( Qt.SizeVerCursor )
-            elif pin_node in ( 4, 6 ):                                                  QApplication.setOverrideCursor( Qt.SizeHorCursor )
-        elif operation == "camera_move":                                                QApplication.setOverrideCursor( Qt.SizeAllCursor )
-        elif operation == "camera_scale":                                               QApplication.setOverrideCursor( Qt.SizeVerCursor )
+            if pin_node == 0:                                                           QApplication.setOverrideCursor( Qt.CursorShape.SizeAllCursor )
+            elif pin_node == 5:                                                         QApplication.setOverrideCursor( Qt.CursorShape.SizeHorCursor )
+            elif pin_node in ( 1, 9 ):                                                  QApplication.setOverrideCursor( Qt.CursorShape.SizeFDiagCursor )
+            elif pin_node in ( 3, 7 ):                                                  QApplication.setOverrideCursor( Qt.CursorShape.SizeBDiagCursor )
+            elif pin_node in ( 2, 8 ):                                                  QApplication.setOverrideCursor( Qt.CursorShape.SizeVerCursor )
+            elif pin_node in ( 4, 6 ):                                                  QApplication.setOverrideCursor( Qt.CursorShape.SizeHorCursor )
+        elif operation == "camera_move":                                                QApplication.setOverrideCursor( Qt.CursorShape.SizeAllCursor )
+        elif operation == "camera_scale":                                               QApplication.setOverrideCursor( Qt.CursorShape.SizeVerCursor )
         elif operation in [ "select_add", "select_minus", "select_replace" ]:           QApplication.restoreOverrideCursor()
-        elif operation == "drag":                                                       QApplication.setOverrideCursor( Qt.ClosedHandCursor )
-        elif operation == "drop":                                                       QApplication.setOverrideCursor( Qt.OpenHandCursor )
+        elif operation == "drag":                                                       QApplication.setOverrideCursor( Qt.CursorShape.ClosedHandCursor )
+        elif operation == "drop":                                                       QApplication.setOverrideCursor( Qt.CursorShape.OpenHandCursor )
         else:                                                                           QApplication.restoreOverrideCursor()
     # UI
     def ProgressBar_Value( self, value ):
@@ -4896,7 +4911,7 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
         #region Actions
 
         # Mapping
-        action = qmenu.exec_( self.mapToGlobal( event.pos() ) )
+        action = qmenu.exec( self.mapToGlobal( event.position().toPoint() ) )
         # General
         if action == action_fit:
             self.Board_Fit()
@@ -4906,7 +4921,7 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
         if action == action_ref_label:
             self.Label_Insert( event )
         if action == action_ref_link:
-            pos = event.pos()
+            pos = event.position().toPoint()
             self.Pin_URL( pos.x(), pos.y() )
         # Link
         if action == action_link_eo:
@@ -5105,7 +5120,7 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
             directory = self.link_eo_url
         # File Dialog
         file_dialog = QFileDialog( QWidget( self ) )
-        file_dialog.setFileMode( QFileDialog.AnyFile )
+        file_dialog.setFileMode( QFileDialog.FileMode.AnyFile )
         file_url = file_dialog.getOpenFileName( self, title, directory, "File( *.eo )" )[0]
         file_url = os.path.normpath( file_url )
         if file_url in invalid:
@@ -5122,7 +5137,7 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
                 directory = os.path.join( dirname, f"{ name }.eo")
         # File Dialog
         file_dialog = QFileDialog( QWidget( self ) )
-        file_dialog.setFileMode( QFileDialog.AnyFile )
+        file_dialog.setFileMode( QFileDialog.FileMode.AnyFile )
         file_url = file_dialog.getSaveFileName( self, title, directory, "File( *.eo )" )[0]
         file_url = os.path.normpath( file_url )
         if file_url in invalid:
@@ -5321,7 +5336,7 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
         extension = "PNG" # "PNG" "JPG"
         ba = QtCore.QByteArray()
         buffer = QtCore.QBuffer( ba )
-        buffer.open( QtCore.QIODevice.WriteOnly )
+        buffer.open( QtCore.QIODevice.OpenModeFlag.WriteOnly )
         ok = qpixmap.save( buffer, extension )
         assert ok
         pixmap_bytes = ba.data()
@@ -5411,7 +5426,7 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
     def Relative_Download( self, lista ):
         # Select Location
         file_dialog = QFileDialog( QWidget( self ) )
-        file_dialog.setFileMode( QFileDialog.AnyFile )
+        file_dialog.setFileMode( QFileDialog.FileMode.AnyFile )
         directory = file_dialog.getExistingDirectory( self, f"Download to Directory" )
         # Save Files
         if directory not in invalid:
@@ -5466,16 +5481,16 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
         # Directory
         list_url = list()
         file_dialog = QFileDialog( QWidget( self ) )
-        file_dialog.setFileMode( QFileDialog.DirectoryOnly )
+        file_dialog.setFileMode( QFileDialog.FileMode.Directory )
         directory = file_dialog.getExistingDirectory( self, f"Select Directory - previous_url = { previous_url }", os.path.dirname( previous_url ) )
         if directory not in invalid:
             qdir = QDir( directory )
-            qdir.setSorting( QDir.Name )
-            qdir.setFilter( QDir.Files | QDir.NoSymLinks | QDir.NoDotAndDotDot )
+            qdir.setSorting( QDir.SortFlag.Name )
+            qdir.setFilter( QDir.Filter.Files | QDir.Filter.NoSymLinks | QDir.Filter.NoDotAndDotDot )
             qdir.setNameFilters( file_normal )
             # Recursive Search
-            if self.state_rebase == True:   recursive = QDirIterator.Subdirectories
-            else:                           recursive = QDirIterator.NoIteratorFlags
+            if self.state_rebase == True:   recursive = QDirIterator.IteratorFlag.Subdirectories
+            else:                           recursive = QDirIterator.IteratorFlag.NoIteratorFlags
             # Files
             it = QDirIterator( qdir, recursive )
             while( it.hasNext() ):
@@ -5544,8 +5559,8 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
         # Event
         em = event.modifiers()
         eb = event.buttons()
-        ex = event.x()
-        ey = event.y()
+        ex = int( event.position().x() )
+        ey = int( event.position().y() )
         self.ox = ex
         self.oy = ey
         self.ex = ex
@@ -5556,7 +5571,7 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
         self.Pin_Active( self.pin_index )
         self.Pin_Limits()
         # LMB
-        if em == QtCore.Qt.NoModifier and eb == QtCore.Qt.LeftButton:
+        if em == QtCore.Qt.KeyboardModifier.NoModifier and eb == QtCore.Qt.MouseButton.LeftButton:
             if self.state_pickcolor == True:
                 self.operation = "color_picker"
                 ColorPicker_Event( self, self.ex, self.ey, self.qimage_grab, True )
@@ -5566,32 +5581,32 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
                 else:
                     self.operation = "pin_move"
                     self.pin_node = 0
-        if em == QtCore.Qt.ShiftModifier and eb == QtCore.Qt.LeftButton:
+        if em == QtCore.Qt.KeyboardModifier.ShiftModifier and eb == QtCore.Qt.MouseButton.LeftButton:
             self.operation = "camera_move"
-        if em == QtCore.Qt.ControlModifier and eb == QtCore.Qt.LeftButton:
+        if em == QtCore.Qt.KeyboardModifier.ControlModifier and eb == QtCore.Qt.MouseButton.LeftButton:
             self.operation = "select_add"
             self.Selection_Click( self.pin_index )
-        if em == QtCore.Qt.AltModifier and eb == QtCore.Qt.LeftButton:
+        if em == QtCore.Qt.KeyboardModifier.AltModifier and eb == QtCore.Qt.MouseButton.LeftButton:
             self.operation = "drag_drop"
             self.Clip_Pin()
-        if em == ( QtCore.Qt.ShiftModifier | QtCore.Qt.ControlModifier ) and eb == QtCore.Qt.LeftButton:
+        if em == ( QtCore.Qt.KeyboardModifier.ShiftModifier | QtCore.Qt.KeyboardModifier.ControlModifier ) and eb == QtCore.Qt.MouseButton.LeftButton:
             self.operation = "pin_transform"
-        if em == ( QtCore.Qt.ShiftModifier | QtCore.Qt.ControlModifier | QtCore.Qt.AltModifier ) and eb == QtCore.Qt.LeftButton:
+        if em == ( QtCore.Qt.KeyboardModifier.ShiftModifier | QtCore.Qt.KeyboardModifier.ControlModifier | QtCore.Qt.KeyboardModifier.AltModifier ) and eb == QtCore.Qt.MouseButton.LeftButton:
             self.Pin_Preview( self.pin_index )
         # MMB
-        if em == QtCore.Qt.NoModifier and eb == QtCore.Qt.MiddleButton:
+        if em == QtCore.Qt.KeyboardModifier.NoModifier and eb == QtCore.Qt.MouseButton.MiddleButton:
             self.operation = "camera_move"
         # RMB
-        if em == QtCore.Qt.NoModifier and eb == QtCore.Qt.RightButton:
+        if em == QtCore.Qt.KeyboardModifier.NoModifier and eb == QtCore.Qt.MouseButton.RightButton:
             self.dirty = False
             self.operation = None
             self.Context_Menu( event )
-        if em == QtCore.Qt.ShiftModifier and eb == QtCore.Qt.RightButton:
+        if em == QtCore.Qt.KeyboardModifier.ShiftModifier and eb == QtCore.Qt.MouseButton.RightButton:
             self.operation = "camera_scale"
-        if em == QtCore.Qt.ControlModifier and eb == QtCore.Qt.RightButton:
+        if em == QtCore.Qt.KeyboardModifier.ControlModifier and eb == QtCore.Qt.MouseButton.RightButton:
             self.operation = "select_minus"
             self.Selection_Click( self.pin_index )
-        if em == QtCore.Qt.AltModifier and eb == QtCore.Qt.RightButton:
+        if em == QtCore.Qt.KeyboardModifier.AltModifier and eb == QtCore.Qt.MouseButton.RightButton:
             self.operation = "drag_drop"
             self.Clip_Pin()
         # Update
@@ -5603,8 +5618,8 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
         # Event
         em = event.modifiers()
         eb = event.buttons()
-        ex = event.x()
-        ey = event.y()
+        ex = int( event.position().x() )
+        ey = int( event.position().y() )
         self.ex = ex
         self.ey = ey
         # Operations
@@ -5612,7 +5627,7 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
             ColorPicker_Event( self, self.ex, self.ey, self.qimage_grab, True )
         if self.operation == "pin_move" and self.state_lock == False:
             dx, dy = self.Point_Deltas( ex, ey )
-            if em == QtCore.Qt.NoModifier:
+            if em == QtCore.Qt.KeyboardModifier.NoModifier:
                 self.Move_Pin( dx, dy, False )
             else:
                 self.Move_Pin( dx, dy, True )
@@ -5644,16 +5659,16 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
         # Event
         em = event.modifiers()
         eb = event.buttons()
-        ex = event.x()
-        ey = event.y()
+        ex = int( event.position().x() )
+        ey = int( event.position().y() )
         # LMB
-        if em == QtCore.Qt.NoModifier and eb == QtCore.Qt.LeftButton:
+        if em == QtCore.Qt.KeyboardModifier.NoModifier and eb == QtCore.Qt.MouseButton.LeftButton:
             self.Pin_Index( ex, ey )
             self.Pin_Preview( self.pin_index )
-        if em == QtCore.Qt.ControlModifier and eb == QtCore.Qt.LeftButton:
+        if em == QtCore.Qt.KeyboardModifier.ControlModifier and eb == QtCore.Qt.MouseButton.LeftButton:
             self.Selection_All()
         # RMB
-        if em == QtCore.Qt.ControlModifier and eb == QtCore.Qt.RightButton:
+        if em == QtCore.Qt.KeyboardModifier.ControlModifier and eb == QtCore.Qt.MouseButton.RightButton:
             self.Selection_Clear()
     def mouseReleaseEvent( self, event ):
         # Variables
@@ -5725,8 +5740,8 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
         if len( mime_data ) > 0 or format_id == drag_id:
             if ( self.drop == True and self.drag == False and self.state_lock == False ):
                 # Event
-                event.setDropAction( Qt.CopyAction )
-                pos = event.pos()
+                event.setDropAction( Qt.DropAction.CopyAction )
+                pos = event.position().toPoint()
                 bx, by = self.Point_Location( pos.x(), pos.y() )
                 # Variables
                 self.state_press = True
@@ -5826,15 +5841,15 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
 
         # Painter
         painter = QPainter( self )
-        painter.setRenderHint( QtGui.QPainter.Antialiasing, True )
+        painter.setRenderHint( QtGui.QPainter.RenderHint.Antialiasing, True )
 
         # Mask
-        painter.setClipRect( QRect( int( 0 ), int( 0 ), int( ww ), int( hh ) ), Qt.ReplaceClip )
+        painter.setClipRect( QRect( int( 0 ), int( 0 ), int( ww ), int( hh ) ), Qt.ClipOperation.ReplaceClip )
 
         """
         # Board Scalling
-        painter.setPen( QPen( self.c_lite, 1, Qt.SolidLine ) )
-        painter.setBrush( QtCore.Qt.NoBrush )
+        painter.setPen( QPen( self.c_lite, 1, Qt.PenStyle.SolidLine ) )
+        painter.setBrush( QtCore.Qt.BrushStyle.NoBrush )
         dl = w2 - w2 * self.cam_z
         dt = h2 - h2 * self.cam_z
         dw = ww * self.cam_z
@@ -5846,12 +5861,12 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
 
         # Board
         if self.state_press == False:
-            painter.setPen( QtCore.Qt.NoPen )
+            painter.setPen( QtCore.Qt.PenStyle.NoPen )
             painter.setBrush( QBrush( color_alpha ) )
             painter.drawRect( int( self.board_l ), int( self.board_t ), int( self.board_w ), int( self.board_h ) )
         # No References Square
         if ( self.pin_count == 0 and self.drop == False ):
-            painter.setPen( QtCore.Qt.NoPen )
+            painter.setPen( QtCore.Qt.PenStyle.NoPen )
             painter.setBrush( QBrush( self.c_dark ) )
             nrs = 0.2 * side
             nrwm = int( w2 - nrs )
@@ -5875,11 +5890,11 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
                 bh2 = self.board_t + self.board_h * 0.5
                 dot = 5
                 # Line
-                painter.setPen( QPen( self.c_lite, 2, Qt.SolidLine ) )
-                painter.setBrush( QtCore.Qt.NoBrush )
+                painter.setPen( QPen( self.c_lite, 2, Qt.PenStyle.SolidLine ) )
+                painter.setBrush( QtCore.Qt.BrushStyle.NoBrush )
                 painter.drawLine( int( w2 ), int( h2 ), int( bw2 ), int( bh2 ) )
                 # Dot
-                painter.setPen( QtCore.Qt.NoPen )
+                painter.setPen( QtCore.Qt.PenStyle.NoPen )
                 painter.setBrush( QBrush( self.c_lite ) )
                 painter.drawEllipse( int( w2 - dot ), int( h2 - dot ), int( dot * 2 ), int( dot * 2 ) )
 
@@ -5887,7 +5902,7 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
         self.Board_Render()
 
         # Images and Text
-        painter.setBrush( QtCore.Qt.NoBrush )
+        painter.setBrush( QtCore.Qt.BrushStyle.NoBrush )
         for i in range( 0, self.pin_count ):
             render = self.pin_list[i]["render"]
             if render == True:
@@ -5903,12 +5918,12 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
 
                     # Image
                     if ( pack == True or draw == None ):
-                        painter.setPen( QPen( self.c_lite, 1, Qt.SolidLine ) )
+                        painter.setPen( QPen( self.c_lite, 1, Qt.PenStyle.SolidLine ) )
                         painter.setBrush( QBrush( self.c_dark ) )
                         painter.drawRect( int( dl ), int( dt ), int( dw ), int( dh ) )
                     else:
-                        painter.setPen( QtCore.Qt.NoPen )
-                        painter.setBrush( QtCore.Qt.NoBrush )
+                        painter.setPen( QtCore.Qt.PenStyle.NoPen )
+                        painter.setBrush( QtCore.Qt.BrushStyle.NoBrush )
                         painter.drawPixmap( int( dl ), int( dt ), draw )
                     del draw
                 if tipo == "label":
@@ -5924,16 +5939,16 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
                         # Bounding Box
                         box = QRect( int( dl ), int( dt ), int( dw ), int( dh ) )
                         # Highlight
-                        painter.setPen( QtCore.Qt.NoPen )
+                        painter.setPen( QtCore.Qt.PenStyle.NoPen )
                         painter.setBrush( QBrush( QColor( bg ) ) )
                         painter.drawRect( box )
                         # String
-                        painter.setBrush( QtCore.Qt.NoBrush )
-                        painter.setPen( QPen( QColor( pen ), 1, Qt.SolidLine ) )
+                        painter.setBrush( QtCore.Qt.BrushStyle.NoBrush )
+                        painter.setPen( QPen( QColor( pen ), 1, Qt.PenStyle.SolidLine ) )
                         qfont = QFont( font )
                         qfont.setPointSizeF( letter_size )
                         painter.setFont( qfont )
-                        painter.drawText( box, QtCore.Qt.AlignCenter|QtCore.Qt.TextWordWrap, text )
+                        painter.drawText( box, QtCore.Qt.AlignmentFlag.AlignCenter|QtCore.Qt.TextFlag.TextWordWrap, text )
                         # Garbage
                         del qfont
 
@@ -5945,8 +5960,8 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
                 sel_hor = list()
                 sel_ver = list()
                 # Painter
-                painter.setPen( QtCore.Qt.NoPen )
-                painter.setBrush( QBrush( self.c_select, Qt.Dense4Pattern ) )
+                painter.setPen( QtCore.Qt.PenStyle.NoPen )
+                painter.setBrush( QBrush( self.c_select, Qt.BrushStyle.Dense4Pattern ) )
                 # Items
                 for i in range( 0, self.pin_count ):
                     render = self.pin_list[i]["render"]
@@ -5959,8 +5974,8 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
                             sel_hor.extend( [ dl, dr ] )
                             sel_ver.extend( [ dt, db ] )
                 # Selection Square
-                painter.setPen( QPen( self.c_select, 1, Qt.SolidLine ) )
-                painter.setBrush( QtCore.Qt.NoBrush )
+                painter.setPen( QPen( self.c_select, 1, Qt.PenStyle.SolidLine ) )
+                painter.setBrush( QtCore.Qt.BrushStyle.NoBrush )
                 if ( len( sel_hor ) > 0 and len( sel_ver ) > 0 ):
                     min_x = min( sel_hor )
                     min_y = min( sel_ver )
@@ -5979,8 +5994,8 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
                 line = 200
 
                 # Bounding Box
-                painter.setPen( QPen( self.c_dark, 1, Qt.SolidLine ) )
-                painter.setBrush( QtCore.Qt.NoBrush )
+                painter.setPen( QPen( self.c_dark, 1, Qt.PenStyle.SolidLine ) )
+                painter.setBrush( QtCore.Qt.BrushStyle.NoBrush )
                 painter.drawRect( int( dl ), int( dt ), int( dw ), int( dh ) )
 
                 # Triangle
@@ -5988,10 +6003,10 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
                 if ( ww > min_tri and hh > min_tri ):
                     # Variables
                     tri = 10
-                    painter.setPen( QPen( color_black, 1, Qt.SolidLine ) )
+                    painter.setPen( QPen( color_black, 1, Qt.PenStyle.SolidLine ) )
                     # Scale 1
-                    if self.pin_node == 1:  painter.setBrush( QBrush( self.c_chrome, Qt.SolidPattern ) )
-                    else:                   painter.setBrush( QBrush( color_white, Qt.SolidPattern ) )
+                    if self.pin_node == 1:  painter.setBrush( QBrush( self.c_chrome, Qt.BrushStyle.SolidPattern ) )
+                    else:                   painter.setBrush( QBrush( color_white, Qt.BrushStyle.SolidPattern ) )
                     poly_t1 = QPolygon( [
                         QPoint( int( dl ),       int( dt ) ),
                         QPoint( int( dl + tri ), int( dt ) ),
@@ -5999,8 +6014,8 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
                         ] )
                     painter.drawPolygon( poly_t1 )
                     # scale 3
-                    if self.pin_node == 3:  painter.setBrush( QBrush( self.c_chrome, Qt.SolidPattern ) )
-                    else:                   painter.setBrush( QBrush( color_white, Qt.SolidPattern ) )
+                    if self.pin_node == 3:  painter.setBrush( QBrush( self.c_chrome, Qt.BrushStyle.SolidPattern ) )
+                    else:                   painter.setBrush( QBrush( color_white, Qt.BrushStyle.SolidPattern ) )
                     poly_t3 = QPolygon( [
                         QPoint( int( dr ),       int( dt ) ),
                         QPoint( int( dr ),       int( dt + tri ) ),
@@ -6008,8 +6023,8 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
                         ] )
                     painter.drawPolygon( poly_t3 )
                     # Scale 7
-                    if self.pin_node == 7:  painter.setBrush( QBrush( self.c_chrome, Qt.SolidPattern ) )
-                    else:                   painter.setBrush( QBrush( color_white, Qt.SolidPattern ) )
+                    if self.pin_node == 7:  painter.setBrush( QBrush( self.c_chrome, Qt.BrushStyle.SolidPattern ) )
+                    else:                   painter.setBrush( QBrush( color_white, Qt.BrushStyle.SolidPattern ) )
                     poly_t7 = QPolygon( [
                         QPoint( int( dl ),       int( db ) ),
                         QPoint( int( dl ),       int( db - tri ) ),
@@ -6017,8 +6032,8 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
                         ] )
                     painter.drawPolygon( poly_t7 )
                     # Scale 9
-                    if self.pin_node == 9:  painter.setBrush( QBrush( self.c_chrome, Qt.SolidPattern ) )
-                    else:                   painter.setBrush( QBrush( color_white, Qt.SolidPattern ) )
+                    if self.pin_node == 9:  painter.setBrush( QBrush( self.c_chrome, Qt.BrushStyle.SolidPattern ) )
+                    else:                   painter.setBrush( QBrush( color_white, Qt.BrushStyle.SolidPattern ) )
                     poly_t9 = QPolygon( [
                         QPoint( int( dr ),       int( db ) ),
                         QPoint( int( dr - tri ), int( db ) ),
@@ -6031,10 +6046,10 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
                 if ( ww > min_sq and hh > min_sq ):
                     # Variables
                     sq = 5
-                    painter.setPen( QPen( color_black, 1, Qt.SolidLine ) )
+                    painter.setPen( QPen( color_black, 1, Qt.PenStyle.SolidLine ) )
                     # Clip 2
-                    if self.pin_node == 2:  painter.setBrush( QBrush( self.c_chrome, Qt.SolidPattern ) )
-                    else:                   painter.setBrush( QBrush( color_white, Qt.SolidPattern ) )
+                    if self.pin_node == 2:  painter.setBrush( QBrush( self.c_chrome, Qt.BrushStyle.SolidPattern ) )
+                    else:                   painter.setBrush( QBrush( color_white, Qt.BrushStyle.SolidPattern ) )
                     poly_s2 = QPolygon( [
                         QPoint( int( dl + dw2 - sq ), int( dt ) ),
                         QPoint( int( dl + dw2 - sq ), int( dt + sq ) ),
@@ -6043,8 +6058,8 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
                         ] )
                     painter.drawPolygon( poly_s2 )
                     # Clip 4
-                    if self.pin_node == 4:  painter.setBrush( QBrush( self.c_chrome, Qt.SolidPattern ) )
-                    else:                   painter.setBrush( QBrush( color_white, Qt.SolidPattern ) )
+                    if self.pin_node == 4:  painter.setBrush( QBrush( self.c_chrome, Qt.BrushStyle.SolidPattern ) )
+                    else:                   painter.setBrush( QBrush( color_white, Qt.BrushStyle.SolidPattern ) )
                     poly_s4 = QPolygon( [
                         QPoint( int( dl ),      int( dt + dh2 - sq ) ),
                         QPoint( int( dl + sq ), int( dt + dh2 - sq ) ),
@@ -6053,8 +6068,8 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
                         ] )
                     painter.drawPolygon( poly_s4 )
                     # Clip 6
-                    if self.pin_node == 6:  painter.setBrush( QBrush( self.c_chrome, Qt.SolidPattern ) )
-                    else:                   painter.setBrush( QBrush( color_white, Qt.SolidPattern ) )
+                    if self.pin_node == 6:  painter.setBrush( QBrush( self.c_chrome, Qt.BrushStyle.SolidPattern ) )
+                    else:                   painter.setBrush( QBrush( color_white, Qt.BrushStyle.SolidPattern ) )
                     poly_s6 = QPolygon( [
                         QPoint( int( dr ),      int( dt + dh2 - sq ) ),
                         QPoint( int( dr - sq ), int( dt + dh2 - sq ) ),
@@ -6063,8 +6078,8 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
                         ] )
                     painter.drawPolygon( poly_s6 )
                     # Clip 8
-                    if self.pin_node == 8:  painter.setBrush( QBrush( self.c_chrome, Qt.SolidPattern ) )
-                    else:                   painter.setBrush( QBrush( color_white, Qt.SolidPattern ) )
+                    if self.pin_node == 8:  painter.setBrush( QBrush( self.c_chrome, Qt.BrushStyle.SolidPattern ) )
+                    else:                   painter.setBrush( QBrush( color_white, Qt.BrushStyle.SolidPattern ) )
                     poly_s8 = QPolygon( [
                         QPoint( int( dl + dw2 - sq ), int( db ) ),
                         QPoint( int( dl + dw2 - sq ), int( db - sq ) ),
@@ -6082,25 +6097,25 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
                         # Lines
                         cir_x, cir_y = Trig_2D_Points_Rotate( dl + dw2 , dt + dh2, line, Limit_Looper( trz + 90, 360 ) )
                         neu_x, neu_y = Trig_2D_Points_Rotate( dl + dw2 , dt + dh2, line, Limit_Looper( 90, 360 ) )
-                        painter.setPen( QPen( color_black, 4, Qt.SolidLine ) )
+                        painter.setPen( QPen( color_black, 4, Qt.PenStyle.SolidLine ) )
                         painter.drawLine( int( dl + dw2 ), int( dt + dh2 ), int( cir_x ), int( cir_y ) )
                         painter.drawLine( int( dl + dw2 ), int( dt + dh2 ), int( neu_x ), int( neu_y ) )
-                        painter.setPen( QPen( color_white, 2, Qt.SolidLine ) )
+                        painter.setPen( QPen( color_white, 2, Qt.PenStyle.SolidLine ) )
                         painter.drawLine( int( dl + dw2 ), int( dt + dh2 ), int( cir_x ), int( cir_y ) )
                         painter.drawLine( int( dl + dw2 ), int( dt + dh2 ), int( neu_x ), int( neu_y ) )
                         # Circle
-                        painter.setPen( QPen( color_black, 1, Qt.SolidLine ) )
-                        painter.setBrush( QBrush( self.c_chrome, Qt.SolidPattern ) )
+                        painter.setPen( QPen( color_black, 1, Qt.PenStyle.SolidLine ) )
+                        painter.setBrush( QBrush( self.c_chrome, Qt.BrushStyle.SolidPattern ) )
                         painter.drawEllipse( int( dl + dw2 - cir ), int( dt + dh2 - cir ), int( 2 * cir ), int( 2 * cir ) )
                     else:
-                        painter.setPen( QPen( color_black, 1, Qt.SolidLine ) )
-                        painter.setBrush( QBrush( color_white, Qt.SolidPattern ) )
+                        painter.setPen( QPen( color_black, 1, Qt.PenStyle.SolidLine ) )
+                        painter.setBrush( QBrush( color_white, Qt.BrushStyle.SolidPattern ) )
                         painter.drawEllipse( int( dl + dw2 - cir ), int( dt + dh2 - cir ), int( 2 * cir ), int( 2 * cir ) )
 
         # Cursor Selection Square
         if ( self.state_press == True and self.select_box == True and self.state_pack == False ):
-            painter.setPen( QPen( self.c_chrome, 2, Qt.SolidLine ) )
-            painter.setBrush( QBrush( self.c_chrome, Qt.Dense7Pattern ) )
+            painter.setPen( QPen( self.c_chrome, 2, Qt.PenStyle.SolidLine ) )
+            painter.setBrush( QBrush( self.c_chrome, Qt.BrushStyle.Dense7Pattern ) )
             sx = min( self.ox, self.ex )
             sy = min( self.oy, self.ey )
             sw = abs( self.ex - self.ox )
@@ -6110,13 +6125,13 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
         # Pixmap Preview
         if self.pin_preview != None:
             # Back Drop
-            painter.setPen( QtCore.Qt.NoPen )
+            painter.setPen( QtCore.Qt.PenStyle.NoPen )
             painter.setBrush( QBrush( color_alpha ) )
             painter.drawRect( 0, 0, ww, hh )
             # Pin Preview
-            painter.setPen( QtCore.Qt.NoPen )
-            painter.setBrush( QtCore.Qt.NoBrush )
-            preview = self.pin_preview.scaled( int( ww ), int( hh ), Qt.KeepAspectRatio, Qt.FastTransformation )
+            painter.setPen( QtCore.Qt.PenStyle.NoPen )
+            painter.setBrush( QtCore.Qt.BrushStyle.NoBrush )
+            preview = self.pin_preview.scaled( int( ww ), int( hh ), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.FastTransformation )
             px = w2 - preview.width() * 0.5
             py = h2 - preview.height() * 0.5
             painter.drawPixmap( int( px ), int( py ), preview )
@@ -6136,7 +6151,7 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
         # Packing Points
         v = 255
         dot = 20 * self.cam_z
-        painter.setPen( QPen( self.c_dark, 2, Qt.SolidLine, Qt.SquareCap, Qt.MiterJoin ) )
+        painter.setPen( QPen( self.c_dark, 2, Qt.PenStyle.SolidLine, Qt.PenCapStyle.SquareCap, Qt.PenJoinStyle.MiterJoin ) )
         for item in self.p:
             px = w2 + ( item[0] - w2 ) * self.cam_z
             py = h2 + ( item[1] - h2 ) * self.cam_z
@@ -6150,8 +6165,8 @@ class ImagineBoard_Reference( QtWidgets.QWidget ):
             painter.drawEllipse( int( px - dot ), int( py - dot ), int( dot * 2 ), int( dot * 2 ) )
 
             # # Point location Text
-            # painter.setBrush( QtCore.Qt.NoBrush )
-            # painter.setPen( QPen( QColor( self.c_lite ), 1, Qt.SolidLine ) )
+            # painter.setBrush( QtCore.Qt.BrushStyle.NoBrush )
+            # painter.setPen( QPen( QColor( self.c_lite ), 1, Qt.PenStyle.SolidLine ) )
             # qfont = QFont( self.label_font, int( 8 * self.cam_z ) )
             # painter.setFont( qfont )
             # box = QRect( int( px ), int( py ), int( 100*self.cam_z ), int( 20*self.cam_z ) )
@@ -6305,11 +6320,11 @@ class Worker_Packer( QtCore.QObject ):
     def Cycle_Interruption( self, stop ):
         if stop == True:
             message = "Continue Packing ?"
-            loop = QMessageBox.question( QWidget(), DOCKER_NAME, message, QMessageBox.Yes, QMessageBox.Abort )
-            if loop == QMessageBox.Yes:
+            loop = QMessageBox.question( QWidget(), DOCKER_NAME, message, QMessageBox.StandardButton.Yes, QMessageBox.StandardButton.Abort )
+            if loop == QMessageBox.StandardButton.Yes:
                 self.PACKER_CYCLE.emit( True )
                 stop = False
-            if loop == QMessageBox.Abort:
+            if loop == QMessageBox.StandardButton.Abort:
                 self.PACKER_CYCLE.emit( False )
                 stop = True
         return stop
@@ -6877,7 +6892,7 @@ class List_Data( QtWidgets.QListWidget ):
         action_clear = qmenu.addAction( "Clear List" )
 
         # Mapping
-        action = qmenu.exec_( self.mapToGlobal( event.pos() ) )
+        action = qmenu.exec( self.mapToGlobal( event.pos() ) )
         # General
         if action == action_files:
             self.LIST_FILES.emit()
@@ -6927,7 +6942,7 @@ class Drive_TreeView( QtWidgets.QTreeView ):
                 for model_item in model_list:
                     self.setCurrentIndex( model_item )
                 self.setCurrentIndex( child_item )
-                self.scrollTo( child_item, QAbstractItemView.PositionAtCenter )
+                self.scrollTo( child_item, QAbstractItemView.ScrollHint.PositionAtCenter )
 
             event.acceptProposedAction()
     # Items
@@ -6935,8 +6950,8 @@ class Drive_TreeView( QtWidgets.QTreeView ):
         # QDir
         qdir = QDir()
         qdir.setPath( parent_path )
-        qdir.setSorting( QDir.Name )
-        qdir.setFilter( QDir.AllEntries | QDir.NoSymLinks | QDir.NoDotAndDotDot )
+        qdir.setSorting( QDir.SortFlag.Name )
+        qdir.setFilter( QDir.Filter.AllEntries | QDir.Filter.NoSymLinks | QDir.Filter.NoDotAndDotDot )
         info_list = qdir.entryInfoList()
         # Model
         model_list = list()
